@@ -69,12 +69,18 @@ const Login = () => {
       <div className={styles.loginLeft}>
         <div className={styles.leftContainer}>
           <div className={styles.loginTitle}>
-            <div>{title === 'login' ? t('login') : t('register')}</div>
-            <span>
+            <div>
+              <img
+                src={require('@/assets/jpg/tiaofu.png')}
+                alt="tiaofu"
+                style={{ width: '70%', height: '70%' }}
+              />
+            </div>
+            {/* <span>
               {title === 'login'
                 ? t('loginDescription')
                 : t('registerDescription')}
-            </span>
+            </span> */}
           </div>
 
           <Form
