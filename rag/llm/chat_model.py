@@ -45,6 +45,7 @@ class Base(ABC):
         if "max_tokens" in gen_conf:
             del gen_conf["max_tokens"]
         try:
+            print(f"chat base info: {self.model_name}, {history}, {gen_conf}")
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=history,
@@ -504,6 +505,7 @@ class LocalAIChat(Base):
             raise ValueError("Local llm url cannot be None")
         if base_url.split("/")[-1] != "v1":
             base_url = os.path.join(base_url, "v1")
+        print(f"添加模型信息: {base_url}")
         self.client = OpenAI(api_key="empty", base_url=base_url)
         self.model_name = model_name.split("___")[0]
 

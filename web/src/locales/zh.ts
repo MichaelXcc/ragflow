@@ -61,14 +61,14 @@ export default {
     },
     header: {
       knowledgeBase: '知识库',
-      chat: '聊天',
+      chat: '小助手',
       register: '注册',
       signin: '登录',
       home: '首页',
       setting: '用户设置',
       logout: '登出',
       fileManager: '文件管理',
-      flow: 'Agent',
+      flow: '智能体',
       search: '搜索',
     },
     knowledgeList: {
@@ -759,7 +759,7 @@ General：实体和关系提取提示来自 GitHub - microsoft/graphrag：基于
       addMessage: '新增消息',
       loop: '循环上限',
       loopTip:
-        'loop为当前组件循环次数上限，当循环次数超过loop的值时，说明组件不能完成当前任务，请重新优化agent',
+        'loop为当前组件循环次数上限，当循环次数超过loop的值时，说明组件不能完成当前任务，请重新优化智能体。',
       yes: '是',
       no: '否',
       key: 'key',
@@ -784,7 +784,7 @@ General：实体和关系提取提示来自 GitHub - microsoft/graphrag：基于
       promptText: `请总结以下段落。注意数字，不要胡编乱造。段落如下：
 {input}
 以上就是你需要总结的内容。`,
-      createGraph: '创建 Agent',
+      createGraph: '创建智能体',
       createFromTemplates: '从模板创建',
       retrieval: '知识检索',
       generate: '生成回答',

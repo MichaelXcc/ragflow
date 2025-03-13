@@ -1,11 +1,13 @@
 export const UserSettingBaseKey = 'user-setting';
 
+//  系统菜单列表
 export enum UserSettingRouteKey {
   Profile = 'profile',
   Password = 'password',
   Model = 'model',
   System = 'system',
-  Api = 'api',
+  // 先不提供api
+  // Api = 'api',
   Team = 'team',
   Logout = 'logout',
 }

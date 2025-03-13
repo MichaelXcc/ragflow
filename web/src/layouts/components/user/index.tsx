@@ -15,12 +15,15 @@ const App: React.FC = () => {
   return (
     <Avatar
       size={32}
+      // onHover={toSetting}
+
       onClick={toSetting}
       className={styles.clickAvailable}
-      src={
-        userInfo.avatar ??
-        'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
-      }
+      // src={
+      //   userInfo.avatar ??
+      //   'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
+      // }
+      src={userInfo.avatar ?? '/x.png'}
     />
   );
 };

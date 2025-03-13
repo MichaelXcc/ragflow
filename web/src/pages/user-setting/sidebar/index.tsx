@@ -44,7 +44,9 @@ const SideBar = () => {
         <Flex justify={'space-between'}>
           {t(label)}
           <span className={styles.version}>
-            {label === 'system' && version}
+            {/* 从后端获取的，后端通过git 获取版本信息， TODO 可通过数据库信息控制版本 */}
+            {label === 'system' && 'LeX.v1.0.0'}
+            {/* {label === 'system' && version} */}
           </span>
         </Flex>
       ),
