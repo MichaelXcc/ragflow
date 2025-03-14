@@ -49,6 +49,7 @@ import {
   FormOutlined,
   MergeCellsOutlined,
   MessageOutlined,
+  RightSquareOutlined,
   RocketOutlined,
   SendOutlined,
 } from '@ant-design/icons';
@@ -103,6 +104,8 @@ export enum Operator {
   Email = 'Email',
   Iteration = 'Iteration',
   IterationStart = 'IterationItem',
+  // TODO: add more operators
+  Code = 'Code',
 }
 
 export const CommonOperatorList = Object.values(Operator).filter(
@@ -146,6 +149,8 @@ export const operatorIconMap = {
   [Operator.Email]: EmailIcon,
   [Operator.Iteration]: IterationCcw,
   [Operator.IterationStart]: CirclePower,
+  // TODO: add more operators
+  [Operator.Code]: RightSquareOutlined,
 };
 
 export const operatorMap: Record<
@@ -284,6 +289,8 @@ export const operatorMap: Record<
   [Operator.Email]: { backgroundColor: '#e6f7ff' },
   [Operator.Iteration]: { backgroundColor: '#e6f7ff' },
   [Operator.IterationStart]: { backgroundColor: '#e6f7ff' },
+  // TODO: add more operators
+  [Operator.Code]: { backgroundColor: '#e6f7ff' },
 };
 
 export const componentMenuList = [
@@ -325,68 +332,71 @@ export const componentMenuList = [
     name: Operator.Note,
   },
   {
-    name: Operator.DuckDuckGo,
+    name: Operator.Code,
   },
-  {
-    name: Operator.Baidu,
-  },
-  {
-    name: Operator.Wikipedia,
-  },
-  {
-    name: Operator.PubMed,
-  },
-  {
-    name: Operator.ArXiv,
-  },
-  {
-    name: Operator.Google,
-  },
-  {
-    name: Operator.Bing,
-  },
-  {
-    name: Operator.GoogleScholar,
-  },
-  {
-    name: Operator.DeepL,
-  },
-  {
-    name: Operator.GitHub,
-  },
-  {
-    name: Operator.BaiduFanyi,
-  },
-  {
-    name: Operator.QWeather,
-  },
-  {
-    name: Operator.ExeSQL,
-  },
-  {
-    name: Operator.WenCai,
-  },
-  {
-    name: Operator.AkShare,
-  },
-  {
-    name: Operator.YahooFinance,
-  },
-  {
-    name: Operator.Jin10,
-  },
-  {
-    name: Operator.TuShare,
-  },
-  {
-    name: Operator.Crawler,
-  },
-  {
-    name: Operator.Invoke,
-  },
-  {
-    name: Operator.Email,
-  },
+  // {
+  //   name: Operator.DuckDuckGo,
+  // },
+  // {
+  //   name: Operator.Baidu,
+  // },
+  // {
+  //   name: Operator.Wikipedia,
+  // },
+  // {
+  //   name: Operator.PubMed,
+  // },
+  // {
+  //   name: Operator.ArXiv,
+  // },
+  // {
+  //   name: Operator.Google,
+  // },
+  // {
+  //   name: Operator.Bing,
+  // },
+  // {
+  //   name: Operator.GoogleScholar,
+  // },
+  // {
+  //   name: Operator.DeepL,
+  // },
+  // {
+  //   name: Operator.GitHub,
+  // },
+  // {
+  //   name: Operator.BaiduFanyi,
+  // },
+  // {
+  //   name: Operator.QWeather,
+  // },
+  // {
+  //   name: Operator.ExeSQL,
+  // },
+  // {
+  //   name: Operator.WenCai,
+  // },
+  // {
+  //   name: Operator.AkShare,
+  // },
+  // {
+  //   name: Operator.YahooFinance,
+  // },
+  // {
+  //   name: Operator.Jin10,
+  // },
+  // {
+  //   name: Operator.TuShare,
+  // },
+  // {
+  //   name: Operator.Crawler,
+  // },
+  // {
+  //   name: Operator.Invoke,
+  // },
+  // {
+  //   name: Operator.Email,
+  // },
 ];
 
 const initialQueryBaseValues = {

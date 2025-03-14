@@ -3,7 +3,7 @@ import { Card, Divider, Flex, Layout, Tooltip } from 'antd';
 import classNames from 'classnames';
 import lowerFirst from 'lodash/lowerFirst';
 import React from 'react';
-import { Operator, componentMenuList, operatorMap } from '../constant';
+import { Operator, componentMenuList } from '../constant';
 import { useHandleDrag } from '../hooks';
 import OperatorIcon from '../operator-icon';
 import styles from './index.less';
@@ -54,8 +54,10 @@ const FlowSide = ({ setCollapsed, collapsed }: IProps) => {
               >
                 <Flex align="center" gap={15}>
                   <OperatorIcon
+                    // 智能体画布左侧图标样式
                     name={x.name}
-                    color={operatorMap[x.name].color}
+                    // color={operatorMap[x.name].color}
+                    color={'#000000'}
                   ></OperatorIcon>
                   <section>
                     <Tooltip title={t(`${lowerFirst(x.name)}Description`)}>

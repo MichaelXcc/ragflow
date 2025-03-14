@@ -40,6 +40,7 @@ class Base(ABC):
         self.model_name = model_name
 
     def chat(self, system, history, gen_conf):
+        # llm app 实例的模型调用的
         if system:
             history.insert(0, {"role": "system", "content": system})
         if "max_tokens" in gen_conf:

@@ -64,6 +64,8 @@ const nodeTypes: NodeTypes = {
   emailNode: EmailNode,
   group: IterationNode,
   iterationStartNode: IterationStartNode,
+  // TODO: add more operators
+  // codeNode: CodeNode,
 };
 
 const edgeTypes = {

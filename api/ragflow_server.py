@@ -97,7 +97,7 @@ if __name__ == '__main__':
         "--version", default=False, help="RAGFlow version", action="store_true"
     )
     parser.add_argument(
-        "--debug", default=False, help="debug mode", action="store_true"
+        "--debug", default=True, help="debug mode", action="store_true"
     )
     args = parser.parse_args()
     if args.version:

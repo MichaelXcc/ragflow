@@ -1098,6 +1098,8 @@ General：实体和关系提取提示来自 GitHub - microsoft/graphrag：基于
       endDate: '结束日期',
       keyword: '关键字',
       note: '注释',
+      // TODO: 智能体左侧栏组件名称
+      code: '代码执行',
       noteDescription: '注释',
       notePlaceholder: '请输入注释',
       invoke: 'Invoke',
