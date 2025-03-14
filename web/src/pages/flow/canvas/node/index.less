@@ -283,3 +283,70 @@
     transform: translateY(0);
   }
 }
+
+.codeNode {
+  .commonNode();
+  min-width: 300px;
+  min-height: 200px;
+
+  .codeName {
+    font-size: 10px;
+    color: black;
+  }
+
+  .codeForm {
+    padding: 8px;
+    margin-top: 4px;
+
+    .languageSelect {
+      width: 100%;
+    }
+
+    .codeFormItem {
+      margin-bottom: 0;
+    }
+
+    .codeTextarea {
+      font-family: 'Courier New', Courier, monospace;
+      resize: none;
+      height: auto;
+      min-height: 120px;
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+
+  &.dark {
+    .codeName {
+      color: white;
+    }
+
+    .codeTextarea {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+}
+
+.codeNodeContent {
+  padding-top: 8px;
+
+  label {
+    flex: 1;
+    .textEllipsis();
+  }
+
+  .parameterValue {
+    flex: 2;
+    .conditionLine;
+  }
+
+  .codePreview {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: rgba(0, 0, 0, 0.02);
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

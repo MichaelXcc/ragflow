@@ -10,6 +10,7 @@ import { ReactComponent as baiduFanyiIcon } from '@/assets/svg/baidu-fanyi.svg';
 import { ReactComponent as BaiduIcon } from '@/assets/svg/baidu.svg';
 import { ReactComponent as BeginIcon } from '@/assets/svg/begin.svg';
 import { ReactComponent as BingIcon } from '@/assets/svg/bing.svg';
+import { ReactComponent as CodeIcon } from '@/assets/svg/code.svg';
 import { ReactComponent as ConcentratorIcon } from '@/assets/svg/concentrator.svg';
 import { ReactComponent as CrawlerIcon } from '@/assets/svg/crawler.svg';
 import { ReactComponent as DeepLIcon } from '@/assets/svg/deepl.svg';
@@ -49,7 +50,6 @@ import {
   FormOutlined,
   MergeCellsOutlined,
   MessageOutlined,
-  RightSquareOutlined,
   RocketOutlined,
   SendOutlined,
 } from '@ant-design/icons';
@@ -150,7 +150,7 @@ export const operatorIconMap = {
   [Operator.Iteration]: IterationCcw,
   [Operator.IterationStart]: CirclePower,
   // TODO: add more operators
-  [Operator.Code]: RightSquareOutlined,
+  [Operator.Code]: CodeIcon,
 };
 
 export const operatorMap: Record<
@@ -723,6 +723,15 @@ export const RestrictedUpstreamMap = {
   [Operator.Email]: [Operator.Begin],
   [Operator.Iteration]: [Operator.Begin],
   [Operator.IterationStart]: [Operator.Begin],
+  [Operator.Code]: [
+    Operator.Begin,
+    // Operator.Message,
+    // Operator.Generate,
+    // Operator.Retrieval,
+    // Operator.RewriteQuestion,
+    // Operator.Categorize,
+    // Operator.Relevant,
+  ],
 };
 
 export const NodeMap = {
@@ -762,6 +771,7 @@ export const NodeMap = {
   [Operator.Email]: 'emailNode',
   [Operator.Iteration]: 'group',
   [Operator.IterationStart]: 'iterationStartNode',
+  [Operator.Code]: 'codeNode',
 };
 
 export const LanguageOptions = [

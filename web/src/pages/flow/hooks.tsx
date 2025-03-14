@@ -139,6 +139,10 @@ export const useInitializeOperatorParams = () => {
       [Operator.Email]: initialEmailValues,
       [Operator.Iteration]: initialIterationValues,
       [Operator.IterationStart]: initialIterationValues,
+      [Operator.Code]: {
+        code: '',
+        language: 'python',
+      },
     };
   }, [llmId]);
 

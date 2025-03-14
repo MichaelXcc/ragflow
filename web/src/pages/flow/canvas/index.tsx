@@ -28,10 +28,12 @@ import { useShowDrawer } from '../hooks/use-show-drawer';
 import JsonUploadModal from '../json-upload-modal';
 import RunDrawer from '../run-drawer';
 import { ButtonEdge } from './edge';
+import { FlowEdge } from './edge/flow-edge';
 import styles from './index.less';
 import { RagNode } from './node';
 import { BeginNode } from './node/begin-node';
 import { CategorizeNode } from './node/categorize-node';
+import CodeNode from './node/code-node';
 import { EmailNode } from './node/email-node';
 import { GenerateNode } from './node/generate-node';
 import { InvokeNode } from './node/invoke-node';
@@ -65,11 +67,12 @@ const nodeTypes: NodeTypes = {
   group: IterationNode,
   iterationStartNode: IterationStartNode,
   // TODO: add more operators
-  // codeNode: CodeNode,
+  codeNode: CodeNode,
 };
 
 const edgeTypes = {
   buttonEdge: ButtonEdge,
+  flowEdge: FlowEdge,
 };
 
 interface IProps {
@@ -163,11 +166,10 @@ function FlowCanvas({ drawerVisible, hideDrawer }: IProps) {
         nodeOrigin={[0.5, 0]}
         isValidConnection={isValidConnection}
         defaultEdgeOptions={{
-          type: 'buttonEdge',
-          markerEnd: 'logo',
+          type: 'flowEdge',
           style: {
-            strokeWidth: 2,
-            stroke: 'rgb(202 197 245)',
+            strokeWidth: 3,
+            stroke: '#8c7ae6',
           },
           zIndex: 1001, // https://github.com/xyflow/xyflow/discussions/3498
         }}

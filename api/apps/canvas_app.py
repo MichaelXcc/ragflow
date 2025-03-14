@@ -25,6 +25,10 @@ from agent.canvas import Canvas
 from peewee import MySQLDatabase, PostgresqlDatabase
 from api.db.db_models import APIToken
 
+# 添加调试代码，打印当前路由
+import logging
+logger = logging.getLogger(__name__)
+logger.info("Canvas app loaded with routes:")
 
 @manager.route('/templates', methods=['GET'])  # noqa: F821
 @login_required
@@ -241,6 +245,7 @@ def debug():
                 data=False, message='Only owner of canvas authorized for this operation.',
                 code=RetCode.OPERATING_ERROR)
 
+        print(f"user_canvas.dsl: {user_canvas.dsl}")
         canvas = Canvas(json.dumps(user_canvas.dsl), current_user.id)
         canvas.get_component(req["component_id"])["obj"]._param.debug_inputs = req["params"]
         df = canvas.get_component(req["component_id"])["obj"].debug()
@@ -257,30 +262,61 @@ def test_db_connect():
     try:
         if req["db_type"] in ["mysql", "mariadb"]:
             db = MySQLDatabase(req["database"], user=req["username"], host=req["host"], port=req["port"],
-                               password=req["password"])
-        elif req["db_type"] == 'postgresql':
-            db = PostgresqlDatabase(req["database"], user=req["username"], host=req["host"], port=req["port"],
-                                    password=req["password"])
-        elif req["db_type"] == 'mssql':
-            import pyodbc
-            connection_string = (
-                f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-                f"SERVER={req['host']},{req['port']};"
-                f"DATABASE={req['database']};"
-                f"UID={req['username']};"
-                f"PWD={req['password']};"
-            )
-            db = pyodbc.connect(connection_string)
-            cursor = db.cursor()
-            cursor.execute("SELECT 1")
-            cursor.close()
-        else:
-            return server_error_response("Unsupported database type.")
-        if req["db_type"] != 'mssql':
+                              password=req["password"])
             db.connect()
-        db.close()
-        
-        return get_json_result(data="Database Connection Successful!")
+            db.close()
+        elif req["db_type"] in ["postgres", "postgresql"]:
+            db = PostgresqlDatabase(req["database"], user=req["username"], host=req["host"], port=req["port"],
+                                  password=req["password"])
+            db.connect()
+            db.close()
+        else:
+            return get_json_result(data=False, message="Unsupported database type")
+        return get_json_result(data=True)
     except Exception as e:
-        return server_error_response(e)
+        return get_json_result(data=False, message=str(e))
+
+
+@manager.route('/execute_code', methods=['POST'])  # noqa: F821
+@validate_request("code", "language")
+# @login_required
+def execute_code():
+    """
+    专门用于执行Code节点的代码，不需要加载整个画布
+    """
+    logger.info("Execute code endpoint called")
+    req = request.json
+    logger.info(f"Request data: {req}")
+    try:
+        code = req.get("code", "")
+        language = req.get("language", "python")
+        
+        # 导入Code组件
+        from agent.component.code import Code, CodeParam
+        
+        # 创建参数和执行代码
+        param = CodeParam()
+        param.code = code
+        param.language = language
+        
+        # 初始化代码组件 - 提供必要的参数
+        code_component = Code(canvas=None, id="code_execute", param=param)
+        
+        # 执行代码
+        result = code_component._run({})
+        
+        logger.info(f"Code execution result: {result}")
+        return get_json_result(data=result)
+    except Exception as e:
+        traceback_str = traceback.format_exc()
+        logger.error(f"Code execution failed: {e}\n{traceback_str}")
+        return get_json_result(
+            data={
+                "success": False,
+                "error": str(e),
+                "traceback": traceback_str
+            }, 
+            message="代码执行失败",
+            code=RetCode.OPERATING_ERROR
+        )
 
