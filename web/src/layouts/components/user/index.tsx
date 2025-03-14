@@ -1,20 +1,48 @@
 import { useFetchUserInfo } from '@/hooks/user-setting-hooks';
-import { Avatar, Button, Modal } from 'antd';
+import { Avatar, Flex, Modal, Space, Tabs } from 'antd';
 import React from 'react';
-import { history } from 'umi';
+import { useNavigate } from 'umi';
 
-import UserSetting from '@/pages/user-setting/index';
+import { useTranslate } from '@/hooks/common-hooks';
+import {
+  UserSettingIconMap,
+  UserSettingRouteKey,
+} from '@/pages/user-setting/constants';
+import UserSettingModel from '@/pages/user-setting/setting-model';
+import UserSettingPassword from '@/pages/user-setting/setting-password';
+import UserSettingProfile from '@/pages/user-setting/setting-profile';
+import SystemInfo from '@/pages/user-setting/setting-system';
+import UserSettingTeam from '@/pages/user-setting/setting-team';
+import routes from '@/routes';
 import styles from '../../index.less';
+
+const data = routes.find((v) => v.path === '/');
+
+// [UserSettingRouteKey.Profile]: ,
+// [UserSettingRouteKey.Password]: <PasswordIcon />,
+// [UserSettingRouteKey.Model]: <ModelProviderIcon />,
+// [UserSettingRouteKey.System]: <MonitorOutlined style={{ fontSize: 24 }} />,
+// [UserSettingRouteKey.Team]: <TeamIcon />,
+// [UserSettingRouteKey.Logout]: <LogOutIcon />,
+
+export const UserSettingComponent = {
+  [UserSettingRouteKey.Profile]: <UserSettingProfile />,
+  [UserSettingRouteKey.Password]: <UserSettingPassword />,
+  [UserSettingRouteKey.Model]: <UserSettingModel />,
+  [UserSettingRouteKey.System]: <SystemInfo />,
+  [UserSettingRouteKey.Team]: <UserSettingTeam />,
+  [UserSettingRouteKey.Logout]: undefined,
+};
 
 const App: React.FC = () => {
   const { data: userInfo } = useFetchUserInfo();
+  const navigate = useNavigate();
+  const { t } = useTranslate('setting');
+  const maxHeight = document.body.clientHeight - 72 - 50 - 78 - 50;
 
   const toSetting = () => {
-    history.push('/user-setting');
-  };
-
-  const test = () => {
     setIsModalOpen(true);
+    // history.push('/user-setting');
   };
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -36,11 +64,44 @@ const App: React.FC = () => {
         // }
         src={userInfo.avatar ?? '/x.png'}
       />
-      <Button type="primary" onClick={test}>
-        Primary Button
-      </Button>
-      <Modal title="Basic Modal" open={isModalOpen} onCancel={handleCancel}>
-        <UserSetting></UserSetting>
+      {/* <a onClick={test}>
+        设置
+      </a> */}
+      <Modal
+        title="系统设置"
+        footer={false}
+        width={'90%'}
+        open={isModalOpen}
+        onCancel={handleCancel}
+      >
+        {/* <UserSetting></UserSetting> */}
+        {/* <SideBar  ></SideBar>
+        {/* <Flex flex={1} className={styles.outletWrapper}>
+          <Outlet context={{ prop: 'a' }}></Outlet>
+        </Flex> */}
+        <Tabs
+          defaultActiveKey="1"
+          tabPosition={'left'}
+          tabBarStyle={{ paddingLeft: 0 }}
+          style={{ height: maxHeight, overflowY: 'auto' }}
+          items={Object.values(UserSettingRouteKey).map((value) => ({
+            label: (
+              <Flex justify={'space-between'}>
+                <Space>
+                  {UserSettingIconMap[value]}
+                  {t(value)}
+                </Space>
+              </Flex>
+            ),
+            key: value,
+            disabled: false,
+            children: (
+              <div style={{ height: maxHeight, overflowY: 'auto' }}>
+                {UserSettingComponent[value]}
+              </div>
+            ),
+          }))}
+        />
       </Modal>
     </>
   );
