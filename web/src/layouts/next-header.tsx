@@ -73,13 +73,7 @@ export function Header() {
 
   return (
     <section className="py-6 px-10 flex justify-between items-center border-b">
-      <div className="flex items-center gap-4">
-        <img
-          src={'/logo.svg'}
-          alt="logo"
-          className="w-[100] h-[100] mr-[12]"
-          onClick={handleLogoClick}
-        />
+      <div className="invisible flex items-center gap-4">
         <Button
           variant="secondary"
           className="bg-colors-background-inverse-standard"
@@ -89,29 +83,39 @@ export function Header() {
           <Star />
         </Button>
       </div>
-      <div className="flex gap-2 items-center">
-        <Button
-          variant={'icon'}
-          size={'icon'}
-          onClick={navigateToHome}
-          className={cn({
-            'bg-colors-background-inverse-strong': isHome,
-          })}
-        >
-          <House
+
+      <div className="flex flex-col items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
+        <img
+          src={'/logo.svg'}
+          alt="logo"
+          className="w-[100] h-[100] mb-2 cursor-pointer"
+          onClick={handleLogoClick}
+        />
+        <div className="flex gap-2 items-center">
+          <Button
+            variant={'icon'}
+            size={'icon'}
+            onClick={navigateToHome}
             className={cn({
-              'text-colors-text-inverse-strong': isHome,
+              'bg-colors-background-inverse-strong': isHome,
             })}
-          />
-        </Button>
-        <div className="h-8 w-[1px] bg-colors-outline-neutral-strong"></div>
-        <Segmented
-          options={options}
-          value={currentPath}
-          onChange={handleChange}
-          className="bg-colors-background-inverse-standard text-backgroundInverseStandard-foreground"
-        ></Segmented>
+          >
+            <House
+              className={cn({
+                'text-colors-text-inverse-strong': isHome,
+              })}
+            />
+          </Button>
+          <div className="h-8 w-[1px] bg-colors-outline-neutral-strong"></div>
+          <Segmented
+            options={options}
+            value={currentPath}
+            onChange={handleChange}
+            className="bg-colors-background-inverse-standard text-backgroundInverseStandard-foreground"
+          ></Segmented>
+        </div>
       </div>
+
       <div className="flex items-center gap-4">
         <Container className="bg-colors-background-inverse-standard hidden xl:flex">
           V 0.13.0

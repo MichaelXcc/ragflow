@@ -22,6 +22,7 @@ export function RagNode({
           [styles.selectedNode]: selected,
         },
       )}
+      style={{ zIndex: 9999 }}
     >
       <Handle
         id="c"

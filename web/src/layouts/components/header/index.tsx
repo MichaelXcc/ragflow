@@ -64,16 +64,17 @@ const RagHeader = () => {
         height: '72px',
       }}
     >
-      <a href={window.location.origin}>
-        <Space
-          size={12}
-          onClick={handleLogoClick}
-          className={styles.logoWrapper}
-        >
+      <a
+        href={window.location.origin}
+        onClick={handleLogoClick}
+        className={styles.logoContainer}
+      >
+        <Space size={12} className={styles.logoWrapper}>
           <img src="/tubiao1.png" alt="" className={styles.appIcon} />
           <span className={styles.appName}>{appConf.appName}</span>
         </Space>
       </a>
+
       <Space size={[0, 8]} wrap>
         <Radio.Group
           defaultValue="a"
@@ -107,6 +108,7 @@ const RagHeader = () => {
           ))}
         </Radio.Group>
       </Space>
+
       <Toolbar></Toolbar>
     </Header>
   );

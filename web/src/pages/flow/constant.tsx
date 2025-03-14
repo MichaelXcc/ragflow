@@ -2989,4 +2989,5 @@ export const NoDebugOperatorsList = [
   Operator.RewriteQuestion,
   Operator.Switch,
   Operator.Iteration,
+  Operator.Code,
 ];

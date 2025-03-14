@@ -12,8 +12,16 @@
   border-color: #1677ff;
 }
 
+.logoContainer {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
 .logoWrapper {
   .pointerCursor;
+  display: flex;
+  align-items: center;
 }
 
 .appIcon {
@@ -24,10 +32,20 @@
 .appName {
   vertical-align: middle;
   font-family: Inter;
-  font-size: 16px;
+  font-size: 18px;
   font-style: normal;
   font-weight: 600;
   line-height: 20px;
+}
+
+.centeredLogoContainer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
 }
 
 .radioGroup {

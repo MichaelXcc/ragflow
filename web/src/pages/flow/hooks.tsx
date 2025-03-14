@@ -223,6 +223,7 @@ export const useHandleDrop = () => {
         sourcePosition: Position.Right,
         targetPosition: Position.Left,
         dragHandle: getNodeDragHandle(type),
+        style: { zIndex: 1002 },
       };
 
       if (type === Operator.Iteration) {

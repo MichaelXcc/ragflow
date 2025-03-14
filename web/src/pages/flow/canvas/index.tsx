@@ -12,7 +12,7 @@ import {
   ReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { Book, FolderInput, FolderOutput } from 'lucide-react';
+import { /* Book, */ FolderInput, FolderOutput } from 'lucide-react';
 import ChatDrawer from '../chat/drawer';
 import FormDrawer from '../flow-drawer';
 import {
@@ -23,7 +23,7 @@ import {
 } from '../hooks';
 import { useBeforeDelete } from '../hooks/use-before-delete';
 import { useHandleExportOrImportJsonFile } from '../hooks/use-export-json';
-import { useOpenDocument } from '../hooks/use-open-document';
+// import { useOpenDocument } from '../hooks/use-open-document';
 import { useShowDrawer } from '../hooks/use-show-drawer';
 import JsonUploadModal from '../json-upload-modal';
 import RunDrawer from '../run-drawer';
@@ -101,7 +101,7 @@ function FlowCanvas({ drawerVisible, hideDrawer }: IProps) {
     hideFileUploadModal,
   } = useHandleExportOrImportJsonFile();
 
-  const openDocument = useOpenDocument();
+  // const openDocument = useOpenDocument();
 
   const {
     onNodeClick,
@@ -165,13 +165,15 @@ function FlowCanvas({ drawerVisible, hideDrawer }: IProps) {
         onSelectionChange={onSelectionChange}
         nodeOrigin={[0.5, 0]}
         isValidConnection={isValidConnection}
+        nodesFocusable={true}
+        edgesFocusable={false}
         defaultEdgeOptions={{
           type: 'flowEdge',
           style: {
             strokeWidth: 3,
             stroke: '#8c7ae6',
           },
-          zIndex: 1001, // https://github.com/xyflow/xyflow/discussions/3498
+          zIndex: 0,
         }}
         deleteKeyCode={['Delete', 'Backspace']}
         onBeforeDelete={handleBeforeDelete}
@@ -194,6 +196,7 @@ function FlowCanvas({ drawerVisible, hideDrawer }: IProps) {
               <TooltipContent>Export</TooltipContent>
             </Tooltip>
           </ControlButton>
+          {/* Document按钮已注释掉
           <ControlButton onClick={openDocument}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -202,6 +205,7 @@ function FlowCanvas({ drawerVisible, hideDrawer }: IProps) {
               <TooltipContent>Document</TooltipContent>
             </Tooltip>
           </ControlButton>
+          */}
         </Controls>
       </ReactFlow>
       {formDrawerVisible && (

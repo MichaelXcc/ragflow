@@ -17,7 +17,7 @@ interface IProps {
   wrapperClassName?: string;
 }
 
-const ExcludedRunStateOperators = [Operator.Answer];
+const ExcludedRunStateOperators = [Operator.Answer, Operator.Code];
 
 export function RunStatus({ id, name, label }: IProps) {
   const { t } = useTranslate('flow');
@@ -45,10 +45,18 @@ const NodeHeader = ({
   className,
   wrapperClassName,
 }: IProps) => {
+  // 判断是否是Code算子
+  const isCodeOperator = label === Operator.Code;
+
+  // 为Code算子设置样式
+  const flexStyle = isCodeOperator
+    ? { alignItems: 'center', height: '100%', padding: '0' }
+    : {};
+
   return (
     <section className={wrapperClassName}>
       {!ExcludedRunStateOperators.includes(label as Operator) && (
-        <RunStatus id={id} name={name} label={label}></RunStatus>
+        <RunStatus id={id} name={name} label={label} />
       )}
       <Flex
         flex={1}
@@ -56,15 +64,19 @@ const NodeHeader = ({
         justify={'space-between'}
         gap={gap}
         className={className}
+        style={flexStyle}
       >
         <OperatorIcon
           name={label as Operator}
           color={operatorMap[label as Operator]?.color}
-        ></OperatorIcon>
-        <span className="truncate text-center font-semibold text-sm">
+        />
+        <span
+          className="truncate text-center font-semibold text-sm"
+          style={isCodeOperator ? { marginTop: '4px' } : {}}
+        >
           {name}
         </span>
-        <NodeDropdown id={id} label={label}></NodeDropdown>
+        <NodeDropdown id={id} label={label} />
       </Flex>
     </section>
   );

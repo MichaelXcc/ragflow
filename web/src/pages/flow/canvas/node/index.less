@@ -1,8 +1,20 @@
 .dark {
   background: rgb(63, 63, 63) !important;
 }
+
+/* 添加Code节点样式 */
+.codeNode {
+  height: auto !important;
+  padding: 12px 10px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center !important;
+  z-index: 9999 !important;
+}
+
 .ragNode {
   .commonNode();
+  z-index: 9999 !important;
   .nodeName {
     font-size: 10px;
     color: black;
@@ -70,6 +82,7 @@
 
 .logicNode {
   .commonNode();
+  z-index: 9999 !important;
 
   .nodeName {
     font-size: 10px;
@@ -98,6 +111,7 @@
 
 .noteNode {
   .commonNode();
+  z-index: 9999 !important;
   min-width: 140px;
   width: auto;
   height: 100%;
@@ -281,48 +295,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-.codeNode {
-  .commonNode();
-  min-width: 300px;
-  min-height: 200px;
-
-  .codeName {
-    font-size: 10px;
-    color: black;
-  }
-
-  .codeForm {
-    padding: 8px;
-    margin-top: 4px;
-
-    .languageSelect {
-      width: 100%;
-    }
-
-    .codeFormItem {
-      margin-bottom: 0;
-    }
-
-    .codeTextarea {
-      font-family: 'Courier New', Courier, monospace;
-      resize: none;
-      height: auto;
-      min-height: 120px;
-      background-color: rgba(0, 0, 0, 0.02);
-    }
-  }
-
-  &.dark {
-    .codeName {
-      color: white;
-    }
-
-    .codeTextarea {
-      background-color: rgba(255, 255, 255, 0.05);
-    }
   }
 }
 
