@@ -13,6 +13,7 @@ interface IProps {
   items?: MenuProps['items'];
   height?: number;
   needsDeletionValidation?: boolean;
+  onMenuItemClick?: (key: string) => void;
 }
 
 const OperateDropdown = ({
@@ -23,6 +24,7 @@ const OperateDropdown = ({
   items: otherItems = [],
   height = 24,
   needsDeletionValidation = true,
+  onMenuItemClick,
 }: React.PropsWithChildren<IProps>) => {
   const { t } = useTranslation();
   const showDeleteConfirm = useShowDeleteConfirm();
@@ -40,11 +42,14 @@ const OperateDropdown = ({
     domEvent.stopPropagation();
     if (key === '1') {
       handleDelete();
+    } else if (onMenuItemClick) {
+      onMenuItemClick(key);
     }
   };
 
   const items: MenuProps['items'] = useMemo(() => {
     return [
+      ...otherItems,
       {
         key: '1',
         label: (
@@ -54,7 +59,6 @@ const OperateDropdown = ({
           </Space>
         ),
       },
-      ...otherItems,
     ];
   }, [t, otherItems]);
 

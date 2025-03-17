@@ -80,6 +80,7 @@ export default {
       doc: '文档',
       searchKnowledgePlaceholder: '搜索',
       noMoreData: '没有更多数据了',
+      publish: '发布',
     },
     knowledgeDetails: {
       dataset: '数据集',

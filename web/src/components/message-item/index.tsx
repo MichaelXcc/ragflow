@@ -1,4 +1,3 @@
-import { ReactComponent as AssistantIcon } from '@/assets/svg/assistant.svg';
 import { MessageType } from '@/constants/chat';
 import { useSetModalState } from '@/hooks/common-hooks';
 import { IReference, IReferenceChunk } from '@/interfaces/database/chat';
@@ -152,7 +151,11 @@ const MessageItem = ({
             ) : avatarDialog ? (
               <Avatar size={40} src={avatarDialog} />
             ) : (
-              <AssistantIcon />
+              <Avatar
+                size={40}
+                style={{ width: '10%', height: '10%' }}
+                src={'/tubiao1.png'}
+              />
             ))}
 
           <Flex vertical gap={8} flex={1}>

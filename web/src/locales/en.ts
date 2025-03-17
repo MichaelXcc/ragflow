@@ -41,14 +41,12 @@ export default {
     login: {
       login: 'Sign in',
       signUp: 'Sign up',
-      loginDescription: 'We’re so excited to see you again!',
       registerDescription: 'Glad to have you on board!',
       emailLabel: 'Email',
       emailPlaceholder: 'Please input email',
       passwordLabel: 'Password',
       passwordPlaceholder: 'Please input password',
       rememberMe: 'Remember me',
-      signInTip: 'Don’t have an account?',
       signUpTip: 'Already have an account?',
       nicknameLabel: 'Nickname',
       nicknamePlaceholder: 'Please input nickname',
@@ -80,6 +78,7 @@ export default {
       doc: 'Docs',
       searchKnowledgePlaceholder: 'Search',
       noMoreData: `That's all. Nothing more.`,
+      publish: 'Publish',
     },
     knowledgeDetails: {
       dataset: 'Dataset',
@@ -254,7 +253,7 @@ export default {
       paper: `<p>Only <b>PDF</b> file is supported.</p><p>
       Papers will be split by section, such as <i>abstract, 1.1, 1.2</i>. </p><p>
       This approach enables the LLM to summarize the paper more effectively and to provide more comprehensive, understandable responses. 
-      However, it also increases the context for AI conversations and adds to the computational cost for the LLM. So during a conversation, consider reducing the value of ‘<b>topN</b>’.</p>`,
+      However, it also increases the context for AI conversations and adds to the computational cost for the LLM. So during a conversation, consider reducing the value of '<b>topN</b>'.`,
       presentation: `<p>Supported file formats are <b>PDF</b>, <b>PPTX</b>.</p><p>
       Every page in the slides is treated as a chunk, with its thumbnail image stored.</p><p>
       <i>This chunk method is automatically applied to all uploaded PPT files, so you do not need to specify it manually.</i></p>`,
@@ -468,7 +467,7 @@ This auto-tag feature enhances retrieval by adding another layer of domain-speci
       frequencyPenalty: 'Frequency penalty',
       frequencyPenaltyMessage: 'Frequency penalty is required',
       frequencyPenaltyTip:
-        'Similar to the presence penalty, this reduces the model’s tendency to repeat the same words frequently.',
+        'Similar to the presence penalty, this reduces the model`s tendency to repeat the same words frequently.',
       maxTokens: 'Max tokens',
       maxTokensMessage: 'Max tokens is required',
       maxTokensTip: `This sets the maximum length of the model's output, measured in the number of tokens (words or pieces of words). Defaults to 512. If disabled, you lift the maximum token limit, allowing the model to determine the number of tokens in its responses.`,

@@ -9,6 +9,7 @@ import {
   UserSettingIconMap,
   UserSettingRouteKey,
 } from '@/pages/user-setting/constants';
+import ApiPage from '@/pages/user-setting/setting-api';
 import UserSettingModel from '@/pages/user-setting/setting-model';
 import UserSettingPassword from '@/pages/user-setting/setting-password';
 import UserSettingProfile from '@/pages/user-setting/setting-profile';
@@ -32,6 +33,7 @@ export const UserSettingComponent = {
   [UserSettingRouteKey.Model]: <UserSettingModel />,
   [UserSettingRouteKey.System]: <SystemInfo />,
   [UserSettingRouteKey.Team]: <UserSettingTeam />,
+  [UserSettingRouteKey.Api]: <ApiPage />,
   [UserSettingRouteKey.Logout]: undefined,
 };
 
