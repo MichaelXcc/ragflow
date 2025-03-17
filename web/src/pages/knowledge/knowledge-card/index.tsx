@@ -16,8 +16,8 @@ import OperateDropdown from '@/components/operate-dropdown';
 import { useTheme } from '@/components/theme-provider';
 import { useDeleteKnowledge } from '@/hooks/knowledge-hooks';
 import { useFetchUserInfo } from '@/hooks/user-setting-hooks';
-import ChatConfigurationModal from '@/pages/chat/chat-configuration-modal';
 import { useEditDialog } from '@/pages/chat/hooks';
+import KnowledgePublishModal from '../knowledge-publish-modal';
 import styles from './index.less';
 
 interface IProps {
@@ -132,24 +132,21 @@ const KnowledgeCard = ({ item }: IProps) => {
       </Badge.Ribbon>
 
       {dialogEditVisible && (
-        <ChatConfigurationModal
+        <KnowledgePublishModal
           visible={dialogEditVisible}
           initialDialog={{
             ...initialDialog,
-            kb_ids: initialDialog.kb_ids
-              ? [...initialDialog.kb_ids, item.id]
-              : [item.id],
-            kb_names: initialDialog.kb_names
-              ? [...initialDialog.kb_names, item.name]
-              : [item.name],
+            kb_ids: [item.id],
+            kb_names: [item.name],
             name: initialDialog.name || item.name,
             description: initialDialog.description || item.description,
           }}
-          showModal={showDialogEditModal}
           hideModal={hideDialogEditModal}
           loading={dialogSettingLoading}
           onOk={onDialogEditOk}
           clearDialog={clearDialog}
+          knowledgeId={item.id}
+          knowledgeName={item.name}
         />
       )}
     </>

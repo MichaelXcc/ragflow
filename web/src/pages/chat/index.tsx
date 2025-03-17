@@ -293,6 +293,7 @@ const Chat = () => {
           </Flex>
         </Flex>
       </Flex>
+      {/* chat 中间部分 */}
       <Flex
         className={classNames(styles.chatTitleWrapper, {
           [styles.chatTitleWrapperHidden]: !chatListVisible,
@@ -365,7 +366,7 @@ const Chat = () => {
                     <div>
                       <Text
                         ellipsis={{ tooltip: x.name }}
-                        style={{ width: 150 }}
+                        style={{ width: 220 }}
                       >
                         {x.name}
                       </Text>

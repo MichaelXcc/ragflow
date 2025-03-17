@@ -1,6 +1,6 @@
 import i18n from '@/locales/config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { App, ConfigProvider, ConfigProviderProps, theme } from 'antd';
+import { App, ConfigProvider, ConfigProviderProps, message, theme } from 'antd';
 import pt_BR from 'antd/lib/locale/pt_BR';
 import deDE from 'antd/locale/de_DE';
 import enUS from 'antd/locale/en_US';
@@ -18,6 +18,13 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { ThemeProvider, useTheme } from './components/theme-provider';
 import { TooltipProvider } from './components/ui/tooltip';
 import storage from './utils/authorization-util';
+
+// 配置全局消息提示，设置top让消息位置往下移动
+message.config({
+  top: 70, // 距离顶部的距离，默认是24px
+  duration: 2, // 持续时间，默认是3秒
+  maxCount: 3, // 最大显示数量
+});
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);

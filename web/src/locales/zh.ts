@@ -538,6 +538,11 @@ General：实体和关系提取提示来自 GitHub - microsoft/graphrag：基于
         '如果 API 密钥设置正确，它将利用 Tavily 进行网络搜索作为知识库的补充。',
       tavilyApiKeyMessage: '请输入你的 Tavily API Key',
       tavilyApiKeyHelp: '如何获取？',
+      publishKnowledgeAsAssistant: '发布知识库为AI助理',
+      publishKnowledgeAsAssistantDescription: '创建一个使用当前知识库的AI助理',
+      knowledgeBase: '知识库',
+      knowledgeBaseTip: '设置助理使用的知识库',
+      knowledgeBaseFixedTip: '此知识库为固定关联，无需选择',
     },
     setting: {
       profile: '概要',

@@ -538,6 +538,13 @@ This auto-tag feature enhances retrieval by adding another layer of domain-speci
         'If an API key is correctly set here, Tavily-based web searches will be used to supplement knowledge base retrieval.',
       tavilyApiKeyMessage: 'Please enter your Tavily API Key',
       tavilyApiKeyHelp: 'How to get it?',
+      publishKnowledgeAsAssistant: 'Publish Knowledge as AI Assistant',
+      publishKnowledgeAsAssistantDescription:
+        'Create an AI assistant using the current knowledge base',
+      knowledgeBase: 'Knowledge Base',
+      knowledgeBaseTip: 'Set the knowledge base used by this assistant',
+      knowledgeBaseFixedTip:
+        'This knowledge base is fixed, no selection needed',
     },
     setting: {
       profile: 'Profile',
