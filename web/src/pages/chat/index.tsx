@@ -1,6 +1,12 @@
 import { ReactComponent as ChatAppCube } from '@/assets/svg/chat-app-cube.svg';
 import RenameModal from '@/components/rename-modal';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import {
   Avatar,
   Button,
@@ -11,8 +17,6 @@ import {
   MenuProps,
   Space,
   Spin,
-  Tag,
-  Tooltip,
   Typography,
 } from 'antd';
 import { MenuItemProps } from 'antd/lib/menu/MenuItem';
@@ -31,7 +35,6 @@ import {
 
 import EmbedModal from '@/components/api-service/embed-modal';
 import { useShowEmbedModal } from '@/components/api-service/hooks';
-import SvgIcon from '@/components/svg-icon';
 import { useTheme } from '@/components/theme-provider';
 import { SharedFrom } from '@/constants/chat';
 import {
@@ -56,6 +59,7 @@ const Chat = () => {
   const { handleClickConversation } = useClickConversationCard();
   const { dialogId, conversationId } = useGetChatSearchParams();
   const { theme } = useTheme();
+  const [chatListVisible, setChatListVisible] = useState(true);
   const {
     list: conversationList,
     addTemporaryConversation,
@@ -160,6 +164,10 @@ const Chat = () => {
   const handleCreateTemporaryConversation = useCallback(() => {
     addTemporaryConversation();
   }, [addTemporaryConversation]);
+
+  const toggleChatList = useCallback(() => {
+    setChatListVisible((prev) => !prev);
+  }, []);
 
   const buildAppItems = (dialog: IDialog) => {
     const dialogId = dialog.id;
@@ -285,29 +293,56 @@ const Chat = () => {
           </Flex>
         </Flex>
       </Flex>
-      <Divider type={'vertical'} className={styles.divider}></Divider>
-      <Flex className={styles.chatTitleWrapper}>
+      <Flex
+        className={classNames(styles.chatTitleWrapper, {
+          [styles.chatTitleWrapperHidden]: !chatListVisible,
+        })}
+      >
         <Flex flex={1} vertical>
-          <Flex
-            justify={'space-between'}
-            align="center"
-            className={styles.chatTitle}
-          >
-            <Space>
-              <b>{t('chat')}</b>
-              <Tag>{conversationList.length}</Tag>
-            </Space>
-            <Tooltip title={t('newChat')}>
-              <div>
-                <SvgIcon
-                  name="plus-circle-fill"
-                  width={20}
-                  onClick={handleCreateTemporaryConversation}
-                ></SvgIcon>
-              </div>
-            </Tooltip>
+          <Flex className={styles.assistantInfoContainer}>
+            {dialogList.find((x) => x.id === dialogId) && (
+              <Space size={10}>
+                <Avatar
+                  src={dialogList.find((x) => x.id === dialogId)?.icon}
+                  shape={'square'}
+                  size={40}
+                />
+                <div className={styles.assistantInfo}>
+                  <Text
+                    strong
+                    ellipsis={{
+                      tooltip: dialogList.find((x) => x.id === dialogId)?.name,
+                    }}
+                  >
+                    {dialogList.find((x) => x.id === dialogId)?.name}
+                  </Text>
+                  <Text
+                    type="secondary"
+                    className={styles.assistantDescription}
+                    ellipsis={{
+                      tooltip: dialogList.find((x) => x.id === dialogId)
+                        ?.description,
+                    }}
+                  >
+                    {dialogList.find((x) => x.id === dialogId)?.description ||
+                      t('chat')}
+                  </Text>
+                </div>
+              </Space>
+            )}
           </Flex>
-          <Divider></Divider>
+
+          <Flex className="new-chat-button-container">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleCreateTemporaryConversation}
+              className={styles.newChatButton}
+            >
+              {t('openNewChat')}
+            </Button>
+          </Flex>
+
           <Flex vertical gap={10} className={styles.chatTitleContent}>
             <Spin
               spinning={conversationLoading}
@@ -355,7 +390,12 @@ const Chat = () => {
           </Flex>
         </Flex>
       </Flex>
-      <Divider type={'vertical'} className={styles.divider}></Divider>
+      <Button
+        type="text"
+        icon={chatListVisible ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+        onClick={toggleChatList}
+        className={styles.toggleChatListButton}
+      />
       <ChatContainer controller={controller}></ChatContainer>
       {dialogEditVisible && (
         <ChatConfigurationModal

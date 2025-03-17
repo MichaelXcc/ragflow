@@ -1,5 +1,16 @@
 .chatContainer {
   padding: 0 0 24px 24px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  margin: 26px;
+  margin-left: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  :global(.dark) & {
+    background-color: #141414;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
   .messageContainer {
     overflow-y: auto;
     padding-right: 24px;
