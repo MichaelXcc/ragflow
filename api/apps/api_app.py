@@ -336,6 +336,7 @@ def completion():
             fillin_conv(ans)
             API4ConversationService.append_message(conv.id, conv.to_dict())
             break
+        print(f"--completion answer--: {answer}")
         rename_field(answer)
         return get_json_result(data=answer)
 

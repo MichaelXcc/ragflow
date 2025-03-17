@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'umi';
 
 import { useTranslate } from '@/hooks/common-hooks';
+import { useLogout } from '@/hooks/login-hooks';
 import {
   UserSettingIconMap,
   UserSettingRouteKey,
@@ -38,6 +39,7 @@ const App: React.FC = () => {
   const { data: userInfo } = useFetchUserInfo();
   const navigate = useNavigate();
   const { t } = useTranslate('setting');
+  const { logout } = useLogout();
   const maxHeight = document.body.clientHeight - 72 - 50 - 78 - 50;
 
   const toSetting = () => {
@@ -84,6 +86,11 @@ const App: React.FC = () => {
           tabPosition={'left'}
           tabBarStyle={{ paddingLeft: 0 }}
           style={{ height: maxHeight, overflowY: 'auto' }}
+          onChange={(v) => {
+            if (v === 'logout') {
+              logout();
+            }
+          }}
           items={Object.values(UserSettingRouteKey).map((value) => ({
             label: (
               <Flex justify={'space-between'}>
