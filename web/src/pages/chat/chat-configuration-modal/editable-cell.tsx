@@ -86,12 +86,17 @@ export const EditableCell: React.FC<EditableCellProps> = ({
           },
         ]}
       >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
+        <Input
+          ref={inputRef}
+          onPressEnter={save}
+          onBlur={save}
+          style={{ textAlign: 'left', padding: '0 7px' }}
+        />
       </Form.Item>
     ) : (
       <div
         className="editable-cell-value-wrap"
-        style={{ paddingRight: 24 }}
+        style={{ paddingRight: 24, paddingLeft: 0, textAlign: 'left' }}
         onClick={toggleEdit}
       >
         {children}

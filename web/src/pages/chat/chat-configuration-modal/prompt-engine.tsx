@@ -50,6 +50,12 @@ const PromptEngine = (
     },
   };
 
+  const [columnWidths, setColumnWidths] = useState<{ [key: string]: number }>({
+    variable: 100,
+    optional: 80,
+    operation: 60,
+  });
+
   const handleRemove = (key: string) => () => {
     const newData = dataSource.filter((item) => item.key !== key);
     setDataSource(newData);
@@ -103,6 +109,8 @@ const PromptEngine = (
       title: t('key'),
       dataIndex: 'variable',
       key: 'variable',
+      width: columnWidths.variable,
+      align: 'left',
       onCell: (record: DataType) => ({
         record,
         editable: true,
@@ -115,7 +123,7 @@ const PromptEngine = (
       title: t('optional'),
       dataIndex: 'optional',
       key: 'optional',
-      width: 40,
+      width: columnWidths.optional,
       align: 'center',
       render(text, record) {
         return (
@@ -130,7 +138,7 @@ const PromptEngine = (
     {
       title: t('operation'),
       dataIndex: 'operation',
-      width: 30,
+      width: columnWidths.operation,
       key: 'operation',
       align: 'center',
       render(_, record) {
@@ -208,6 +216,7 @@ const PromptEngine = (
                 className={styles.variableTable}
                 components={components}
                 rowClassName={() => styles.editableRow}
+                size="small"
               />
             </Col>
           </Row>
