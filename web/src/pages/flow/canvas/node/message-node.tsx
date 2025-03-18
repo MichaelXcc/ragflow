@@ -16,6 +16,7 @@ export function MessageNode({
 }: NodeProps<IMessageNode>) {
   const messages: string[] = get(data, 'form.messages', []);
   const { theme } = useTheme();
+  console.log('data: ', data);
   return (
     <section
       className={classNames(

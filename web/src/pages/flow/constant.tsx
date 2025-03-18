@@ -391,9 +391,9 @@ export const componentMenuList = [
   // {
   //   name: Operator.Crawler,
   // },
-  // {
-  //   name: Operator.Invoke,
-  // },
+  {
+    name: Operator.Invoke,
+  },
   // {
   //   name: Operator.Email,
   // },

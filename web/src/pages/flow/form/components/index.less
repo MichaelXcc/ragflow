@@ -5,18 +5,101 @@
   }
   margin-bottom: 20px;
   .title {
-    font-weight: 600;
-    font-size: 16px;
+    font-size: 14px;
+    font-weight: 500;
   }
   .variableType {
-    width: 30%;
+    flex: 0 0 100px;
+    display: inline-block;
+    width: 100px;
+    min-width: 100px;
+    margin-bottom: 0;
+  }
+  .variableName {
+    flex: 0 0 160px;
+    display: inline-block;
+    width: 160px;
+    min-width: 160px;
+    margin-bottom: 0;
   }
   .variableValue {
-    flex: 1;
+    flex: 1 1 auto;
+    display: inline-block;
+    margin-bottom: 0;
+    min-width: 200px;
+  }
+  .addButton {
+    margin-top: 10px;
+  }
+}
+
+// 输入变量选择器样式
+.inputVariableSelector {
+  margin-bottom: 20px;
+
+  .title {
+    font-size: 14px;
+    font-weight: 500;
   }
 
-  .addButton {
-    color: rgb(22, 119, 255);
-    font-weight: 600;
+  .helperText {
+    color: #666;
+    font-size: 12px;
+    margin-bottom: 12px;
   }
+}
+
+.variableContainer {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #333;
+  margin-bottom: 16px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.variableRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  background-color: #f5f7fa;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.variableName {
+  flex: 0 0 150px;
+  margin-bottom: 0 !important;
+
+  .inputField {
+    border-radius: 4px;
+    background-color: #f5f7fa;
+  }
+}
+
+.variableValue {
+  flex: 1;
+  margin-bottom: 0 !important;
+  margin-left: 12px;
+  margin-right: 12px;
+
+  .selectField {
+    width: 100%;
+  }
+}
+
+.deleteButton {
+  color: #999;
+  &:hover {
+    color: #ff4d4f;
+  }
+}
+
+.addButton {
+  margin-top: 12px;
 }

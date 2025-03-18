@@ -9,6 +9,187 @@
     background-color: #1a1a1a;
   }
 
+  .mainLayout {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+
+  // 工作区列表样式
+  .workspaceContainer {
+    width: 200px;
+    padding: 20px 16px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #eaeaea;
+    height: 100%;
+
+    :global(.dark) & {
+      background-color: #1a1a1a;
+      border-right: 1px solid #303030;
+    }
+  }
+
+  // 发现区样式
+  .discoverySection {
+    background-color: #fff;
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .discoveryIcon {
+      color: #1677ff;
+      font-size: 20px;
+      margin-right: 8px;
+    }
+
+    .discoveryText {
+      color: #1677ff;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    :global(.dark) & {
+      background-color: #242424;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .workspaceHeader {
+    padding: 8px 8px 12px;
+
+    .workspaceTitle {
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    :global(.dark) & {
+      .workspaceTitle {
+        color: #aaa;
+      }
+    }
+  }
+
+  .workspaceList {
+    .workspaceItem {
+      cursor: pointer;
+      padding: 10px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+      }
+
+      span {
+        margin-left: 10px;
+        font-size: 14px;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      :global(.dark) & {
+        span {
+          color: #ddd;
+        }
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.08);
+        }
+      }
+    }
+  }
+
+  .emptyWorkspace {
+    padding: 20px 0;
+
+    :global(.ant-empty-description) {
+      color: #999;
+      font-size: 13px;
+    }
+  }
+
+  // 应用列表容器样式
+  .appListContainer {
+    flex: 1;
+    padding: 24px;
+    background-color: #ffffff;
+    overflow-y: auto;
+
+    :global(.dark) & {
+      background-color: #141414;
+    }
+  }
+
+  .appListHeader {
+    margin-bottom: 16px;
+
+    h4 {
+      margin-bottom: 0;
+    }
+  }
+
+  .appCard {
+    position: relative;
+    height: 100%;
+    transition: all 0.3s;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f0f0f0;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    :global(.ant-card-meta-title) {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    :global(.ant-card-meta-description) {
+      height: 80px;
+      overflow: hidden;
+    }
+
+    .addToWorkspaceButton {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      width: calc(100% - 20px);
+      height: 32px;
+      font-size: 12px;
+      padding: 4px 8px;
+      background-color: #1677ff;
+      border: none;
+
+      &:hover {
+        background-color: #4096ff;
+      }
+    }
+    .editButton {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
+    :global(.dark) & {
+      background-color: #1f1f1f;
+      border: 1px solid #303030;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      }
+    }
+  }
+
   .chatAppWrapper {
     width: 288px;
     padding: 26px;
@@ -256,5 +437,11 @@
   .divider {
     margin: 0;
     height: 100%;
+  }
+
+  .cubeIcon {
+    &:hover {
+      cursor: pointer;
+    }
   }
 }

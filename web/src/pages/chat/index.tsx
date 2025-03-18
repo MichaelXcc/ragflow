@@ -1,27 +1,35 @@
 import { ReactComponent as ChatAppCube } from '@/assets/svg/chat-app-cube.svg';
 import RenameModal from '@/components/rename-modal';
 import {
+  AppstoreOutlined,
   DeleteOutlined,
   EditOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import {
   Avatar,
   Button,
   Card,
+  Col,
   Divider,
   Dropdown,
+  Empty,
   Flex,
+  List,
   MenuProps,
+  Row,
   Space,
   Spin,
+  Tag,
   Typography,
+  message,
 } from 'antd';
 import { MenuItemProps } from 'antd/lib/menu/MenuItem';
 import classNames from 'classnames';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ChatConfigurationModal from './chat-configuration-modal';
 import ChatContainer from './chat-container';
 import {
@@ -49,7 +57,7 @@ import { IDialog } from '@/interfaces/database/chat';
 import { PictureInPicture2 } from 'lucide-react';
 import styles from './index.less';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 const Chat = () => {
   const { data: dialogList, loading: dialogLoading } = useFetchNextDialogList();
@@ -93,6 +101,11 @@ const Chat = () => {
   const [controller, setController] = useState(new AbortController());
   const { showEmbedModal, hideEmbedModal, embedVisible, beta } =
     useShowEmbedModal();
+  const [selectedDialog, setSelectedDialog] = useState<string | null>(null);
+  const [showConversations, setShowConversations] = useState(false);
+  const [workspaceItems, setWorkspaceItems] = useState<
+    Array<{ id: string; type: string }>
+  >([]);
 
   const handleAppCardEnter = (id: string) => () => {
     handleItemEnter(id);
@@ -145,6 +158,8 @@ const Chat = () => {
 
   const handleDialogCardClick = useCallback(
     (dialogId: string) => () => {
+      setSelectedDialog(dialogId);
+      setShowConversations(true);
       handleClickDialog(dialogId);
     },
     [handleClickDialog],
@@ -167,6 +182,47 @@ const Chat = () => {
 
   const toggleChatList = useCallback(() => {
     setChatListVisible((prev) => !prev);
+  }, []);
+
+  const handleAddToWorkspace = (appId: string) => () => {
+    // 检查是否已在工作区中
+    const isAlreadyInWorkspace = workspaceItems.some(
+      (item) => item.id === appId && item.type === 'app',
+    );
+
+    if (!isAlreadyInWorkspace) {
+      const updatedWorkspaceItems = [
+        ...workspaceItems,
+        { id: appId, type: 'app' },
+      ];
+      setWorkspaceItems(updatedWorkspaceItems);
+      // 保存到 localStorage
+      localStorage.setItem(
+        'workspaceItems',
+        JSON.stringify(updatedWorkspaceItems),
+      );
+      // 添加消息提示
+      message.success(t('addedToWorkspace'));
+    }
+  };
+
+  // 在组件加载时从 localStorage 加载工作区项目
+  useEffect(() => {
+    const savedWorkspaceItems = localStorage.getItem('workspaceItems');
+    if (savedWorkspaceItems) {
+      setWorkspaceItems(JSON.parse(savedWorkspaceItems));
+    }
+  }, []);
+
+  const handleWorkspaceItemClick = (id: string) => () => {
+    setSelectedDialog(id);
+    setShowConversations(true);
+    handleClickDialog(id);
+  };
+
+  const handleBackToApps = useCallback(() => {
+    setShowConversations(false);
+    setSelectedDialog(null);
   }, []);
 
   const buildAppItems = (dialog: IDialog) => {
@@ -200,7 +256,6 @@ const Chat = () => {
         onClick: handleShowOverviewModal(dialog),
         label: (
           <Space>
-            {/* <KeyOutlined /> */}
             <PictureInPicture2 className="size-4" />
             {t('embedIntoSite', { keyPrefix: 'common' })}
           </Space>
@@ -239,165 +294,298 @@ const Chat = () => {
     return appItems;
   };
 
+  const getAppIconForWorkspace = (id: string, type: string) => {
+    if (type === 'app') {
+      const dialog = dialogList.find((d) => d.id === id);
+      if (dialog) {
+        return <Avatar src={dialog.icon} shape="square" size={36} />;
+      }
+    }
+
+    switch (type) {
+      case 'default':
+        return (
+          <Avatar
+            style={{ backgroundColor: '#f56a00' }}
+            shape="square"
+            size={36}
+          >
+            W
+          </Avatar>
+        );
+      default:
+        return <Avatar shape="square" size={36} />;
+    }
+  };
+
+  const getAppNameForWorkspace = (id: string, type: string) => {
+    if (type === 'app') {
+      const dialog = dialogList.find((d) => d.id === id);
+      if (dialog) {
+        return dialog.name;
+      }
+      return t('unknownApp');
+    }
+
+    return '';
+  };
+
   return (
     <Flex className={styles.chatWrapper}>
-      <Flex className={styles.chatAppWrapper}>
-        <Flex flex={1} vertical>
-          <Button type="primary" onClick={handleShowChatConfigurationModal()}>
-            {t('createAssistant')}
-          </Button>
-          <Divider></Divider>
-          <Flex className={styles.chatAppContent} vertical gap={10}>
-            <Spin spinning={dialogLoading} wrapperClassName={styles.chatSpin}>
-              {dialogList.map((x) => (
-                <Card
-                  key={x.id}
-                  hoverable
-                  className={classNames(styles.chatAppCard, {
-                    [theme === 'dark'
-                      ? styles.chatAppCardSelectedDark
-                      : styles.chatAppCardSelected]: dialogId === x.id,
-                  })}
-                  onMouseEnter={handleAppCardEnter(x.id)}
-                  onMouseLeave={handleItemLeave}
-                  onClick={handleDialogCardClick(x.id)}
-                >
-                  <Flex justify="space-between" align="center">
-                    <Space size={15}>
-                      <Avatar src={x.icon} shape={'square'} />
-                      <section>
-                        <b>
-                          <Text
-                            ellipsis={{ tooltip: x.name }}
-                            style={{ width: 130 }}
-                          >
-                            {x.name}
-                          </Text>
-                        </b>
-                        <div>{x.description}</div>
-                      </section>
+      {!showConversations ? (
+        // 应用列表视图
+        <Flex className={styles.mainLayout}>
+          {/* 左侧工作区列表 */}
+          <Flex className={styles.workspaceContainer} vertical>
+            <Flex className={styles.discoverySection} align="center">
+              <SearchOutlined className={styles.discoveryIcon} />
+              <span className={styles.discoveryText}>{t('discovery')}</span>
+            </Flex>
+
+            <Divider style={{ margin: '16px 0' }} />
+
+            <Flex className={styles.workspaceHeader}>
+              <Text className={styles.workspaceTitle}>{t('workspace')}</Text>
+            </Flex>
+
+            {workspaceItems.length > 0 ? (
+              <List
+                className={styles.workspaceList}
+                dataSource={workspaceItems}
+                renderItem={(item) => (
+                  <List.Item
+                    className={styles.workspaceItem}
+                    onClick={handleWorkspaceItemClick(item.id)}
+                  >
+                    <Space>
+                      {getAppIconForWorkspace(item.id, item.type)}
+                      <span>{getAppNameForWorkspace(item.id, item.type)}</span>
                     </Space>
-                    {activated === x.id && (
-                      <section>
-                        <Dropdown menu={{ items: buildAppItems(x) }}>
-                          <ChatAppCube
-                            className={styles.cubeIcon}
-                          ></ChatAppCube>
-                        </Dropdown>
-                      </section>
-                    )}
-                  </Flex>
-                </Card>
-              ))}
-            </Spin>
-          </Flex>
-        </Flex>
-      </Flex>
-      {/* chat 中间部分 */}
-      <Flex
-        className={classNames(styles.chatTitleWrapper, {
-          [styles.chatTitleWrapperHidden]: !chatListVisible,
-        })}
-      >
-        <Flex flex={1} vertical>
-          <Flex className={styles.assistantInfoContainer}>
-            {dialogList.find((x) => x.id === dialogId) && (
-              <Space size={10}>
-                <Avatar
-                  src={dialogList.find((x) => x.id === dialogId)?.icon}
-                  shape={'square'}
-                  size={40}
-                />
-                <div className={styles.assistantInfo}>
-                  <Text
-                    strong
-                    ellipsis={{
-                      tooltip: dialogList.find((x) => x.id === dialogId)?.name,
-                    }}
-                  >
-                    {dialogList.find((x) => x.id === dialogId)?.name}
-                  </Text>
-                  <Text
-                    type="secondary"
-                    className={styles.assistantDescription}
-                    ellipsis={{
-                      tooltip: dialogList.find((x) => x.id === dialogId)
-                        ?.description,
-                    }}
-                  >
-                    {dialogList.find((x) => x.id === dialogId)?.description ||
-                      t('chat')}
-                  </Text>
-                </div>
-              </Space>
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t('noWorkspaceItems')}
+                className={styles.emptyWorkspace}
+              />
             )}
           </Flex>
 
-          <Flex className="new-chat-button-container">
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleCreateTemporaryConversation}
-              className={styles.newChatButton}
+          {/* 右侧应用列表 */}
+          <Flex className={styles.appListContainer} vertical>
+            <Flex
+              className={styles.appListHeader}
+              justify="space-between"
+              align="center"
             >
-              {t('openNewChat')}
-            </Button>
-          </Flex>
-
-          <Flex vertical gap={10} className={styles.chatTitleContent}>
-            <Spin
-              spinning={conversationLoading}
-              wrapperClassName={styles.chatSpin}
-            >
-              {conversationList.map((x) => (
-                <Card
-                  key={x.id}
-                  hoverable
-                  onClick={handleConversationCardClick(x.id, x.is_new)}
-                  onMouseEnter={handleConversationCardEnter(x.id)}
-                  onMouseLeave={handleConversationItemLeave}
-                  className={classNames(styles.chatTitleCard, {
-                    [theme === 'dark'
-                      ? styles.chatTitleCardSelectedDark
-                      : styles.chatTitleCardSelected]: x.id === conversationId,
-                  })}
-                >
-                  <Flex justify="space-between" align="center">
-                    <div>
-                      <Text
-                        ellipsis={{ tooltip: x.name }}
-                        style={{ width: 220 }}
+              <Title level={4}>{t('applicationList')}</Title>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleShowChatConfigurationModal()}
+              >
+                {t('createAssistant')}
+              </Button>
+            </Flex>
+            <Divider />
+            <Spin spinning={dialogLoading}>
+              {dialogList.length > 0 ? (
+                <Row gutter={[16, 16]}>
+                  {dialogList.map((app) => (
+                    <Col xs={24} sm={12} md={8} lg={6} key={app.id}>
+                      <Card
+                        hoverable
+                        className={styles.appCard}
+                        onMouseEnter={handleAppCardEnter(app.id)}
+                        onMouseLeave={handleItemLeave}
+                        onClick={handleDialogCardClick(app.id)}
                       >
-                        {x.name}
-                      </Text>
-                    </div>
-                    {conversationActivated === x.id &&
-                      x.id !== '' &&
-                      !x.is_new && (
-                        <section>
-                          <Dropdown
-                            menu={{ items: buildConversationItems(x.id) }}
+                        <Card.Meta
+                          avatar={
+                            <Avatar src={app.icon} shape="square" size={64} />
+                          }
+                          title={app.name}
+                          description={
+                            <Flex vertical gap={8}>
+                              <Text
+                                type="secondary"
+                                ellipsis={{ tooltip: app.description }}
+                              >
+                                {app.description || t('noDescription')}
+                              </Text>
+                              <Tag color="blue">CHATFLOW</Tag>
+                              <Dropdown
+                                menu={{ items: buildAppItems(app) }}
+                                className={styles.editButton}
+                              >
+                                <ChatAppCube className={styles.cubeIcon} />
+                              </Dropdown>
+                            </Flex>
+                          }
+                        />
+                        {activated === app.id && (
+                          <Button
+                            type="primary"
+                            block
+                            icon={<PlusOutlined />}
+                            className={styles.addToWorkspaceButton}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToWorkspace(app.id)();
+                            }}
                           >
-                            <ChatAppCube
-                              className={styles.cubeIcon}
-                            ></ChatAppCube>
-                          </Dropdown>
-                        </section>
-                      )}
-                  </Flex>
-                </Card>
-              ))}
+                            {t('addToWorkspace')}
+                          </Button>
+                        )}
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              ) : (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={t('noAssistants')}
+                >
+                  <Button
+                    type="primary"
+                    onClick={handleShowChatConfigurationModal()}
+                  >
+                    {t('createAssistant')}
+                  </Button>
+                </Empty>
+              )}
             </Spin>
           </Flex>
         </Flex>
-      </Flex>
-      <Button
-        type="text"
-        icon={chatListVisible ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
-        onClick={toggleChatList}
-        className={styles.toggleChatListButton}
-      />
-      <ChatContainer controller={controller}></ChatContainer>
+      ) : (
+        // 对话视图
+        <>
+          <Flex
+            className={classNames(styles.chatTitleWrapper, {
+              [styles.chatTitleWrapperHidden]: !chatListVisible,
+            })}
+          >
+            <Flex flex={1} vertical>
+              <Flex className={styles.assistantInfoContainer}>
+                <Space size={10}>
+                  <Button
+                    type="text"
+                    icon={<AppstoreOutlined />}
+                    onClick={handleBackToApps}
+                  >
+                    {t('backToApps')}
+                  </Button>
+                </Space>
+                {dialogList.find((x) => x.id === selectedDialog) && (
+                  <Space size={10}>
+                    <Avatar
+                      src={
+                        dialogList.find((x) => x.id === selectedDialog)?.icon
+                      }
+                      shape={'square'}
+                      size={40}
+                    />
+                    <div className={styles.assistantInfo}>
+                      <Text
+                        strong
+                        ellipsis={{
+                          tooltip: dialogList.find(
+                            (x) => x.id === selectedDialog,
+                          )?.name,
+                        }}
+                      >
+                        {dialogList.find((x) => x.id === selectedDialog)?.name}
+                      </Text>
+                      <Text
+                        type="secondary"
+                        className={styles.assistantDescription}
+                        ellipsis={{
+                          tooltip: dialogList.find(
+                            (x) => x.id === selectedDialog,
+                          )?.description,
+                        }}
+                      >
+                        {dialogList.find((x) => x.id === selectedDialog)
+                          ?.description || t('chat')}
+                      </Text>
+                    </div>
+                  </Space>
+                )}
+              </Flex>
+
+              <Flex className="new-chat-button-container">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleCreateTemporaryConversation}
+                  className={styles.newChatButton}
+                >
+                  {t('openNewChat')}
+                </Button>
+              </Flex>
+
+              <Flex vertical gap={10} className={styles.chatTitleContent}>
+                <Spin
+                  spinning={conversationLoading}
+                  wrapperClassName={styles.chatSpin}
+                >
+                  {conversationList.map((x) => (
+                    <Card
+                      key={x.id}
+                      hoverable
+                      onClick={handleConversationCardClick(x.id, x.is_new)}
+                      onMouseEnter={handleConversationCardEnter(x.id)}
+                      onMouseLeave={handleConversationItemLeave}
+                      className={classNames(styles.chatTitleCard, {
+                        [theme === 'dark'
+                          ? styles.chatTitleCardSelectedDark
+                          : styles.chatTitleCardSelected]:
+                          x.id === conversationId,
+                      })}
+                    >
+                      <Flex justify="space-between" align="center">
+                        <div>
+                          <Text
+                            ellipsis={{ tooltip: x.name }}
+                            style={{ width: 220 }}
+                          >
+                            {x.name}
+                          </Text>
+                        </div>
+                        {conversationActivated === x.id &&
+                          x.id !== '' &&
+                          !x.is_new && (
+                            <section>
+                              <Dropdown
+                                menu={{ items: buildConversationItems(x.id) }}
+                              >
+                                <ChatAppCube
+                                  className={styles.cubeIcon}
+                                ></ChatAppCube>
+                              </Dropdown>
+                            </section>
+                          )}
+                      </Flex>
+                    </Card>
+                  ))}
+                </Spin>
+              </Flex>
+            </Flex>
+          </Flex>
+          <Button
+            type="text"
+            icon={
+              chatListVisible ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />
+            }
+            onClick={toggleChatList}
+            className={styles.toggleChatListButton}
+          />
+          <ChatContainer controller={controller}></ChatContainer>
+        </>
+      )}
+
       {dialogEditVisible && (
         <ChatConfigurationModal
           visible={dialogEditVisible}

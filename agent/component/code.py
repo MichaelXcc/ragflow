@@ -72,36 +72,28 @@ class Code(ComponentBase, ABC):
         language = self._param.language.lower()
         code = self._param.code
         
-        # 创建结果对象
-        result = {
-            "success": False,
-            "output": "",
-            "error": "",
-            "result": None
-        }
-        
+        # print(f"self._param: {self._param}")
+        print(f"self._param.variables: {self._param.variables}")
+        result = {}
+
         try:
             # 根据语言类型执行代码
             if language == "python":
-                result = self._execute_python(code)
+                python_result = self._execute_python(code)
+                print(f"python_result: {python_result}")
+                result = python_result
             else:
-                result["error"] = f"不支持的语言类型: {language}"
+                result= f"不支持的语言类型: {language}"
                 logger.warning(f"Unsupported language: {language}")
         except Exception as e:
-            result["error"] = str(e)
-            result["output"] += f"\n错误: {traceback.format_exc()}"
+            result = str(e)
+            result += f"\n错误: {traceback.format_exc()}"
             logger.error(f"Code execution error: {str(e)}")
         
         return result
     
     def _execute_python(self, code):
-        """执行Python代码"""
-        result = {
-            "success": False,
-            "output": "",
-            "error": "",
-            "result": None
-        }
+        """执行Python代码，直接返回执行结果"""
         
         # 捕获标准输出和错误
         stdout_capture = io.StringIO()
@@ -116,24 +108,43 @@ class Code(ComponentBase, ABC):
                 # 执行代码
                 exec(code, {}, local_vars)
                 
-                # 尝试获取返回值 (如果有)
-                if "_result" in local_vars:
-                    result["result"] = local_vars["_result"]
+                # 检查是否有main函数
+                if "main" in local_vars and callable(local_vars["main"]):
+                    import inspect
+                    
+                    # 获取main函数的参数信息
+                    sig = inspect.signature(local_vars["main"])
+                    params = list(sig.parameters.values())
+                    
+                    # 执行main函数并直接返回结果
+                    if params:
+                        # 创建None参数列表
+                        args = [None] * len(params)
+                        # 执行main函数并获取结果
+                        return local_vars["main"](*args)
+                    else:
+                        # 无参数的main函数直接执行
+                        return local_vars["main"]()
+                # 如果没有main函数但有_result变量，返回_result
+                elif "_result" in local_vars:
+                    return local_vars["_result"]
                 
-                # 捕获输出并处理空格
-                output = stdout_capture.getvalue()
-                # 去除开头和结尾的空白字符，保留中间的格式
-                output = output.strip()
-                result["output"] = output
+                # 如果没有main函数和_result，返回标准输出
+                print(f"stdout_capture.getvalue(): {stdout_capture.getvalue()}")
+                output = stdout_capture.getvalue().strip()
+                if output:
+                    return output
+                    
+                # 如果没有任何输出，返回None
+                return None
                 
-                # 标记成功
-                result["success"] = True
         except Exception as e:
-            result["error"] = str(e)
-            result["output"] = stdout_capture.getvalue()
-            result["error"] += "\n" + stderr_capture.getvalue()
-            
-        return result
+            # 发生异常时，返回错误信息
+            error_msg = str(e)
+            stderr_output = stderr_capture.getvalue()
+            if stderr_output:
+                error_msg += "\n" + stderr_output
+            return f"错误: {error_msg}"
     
     def get_input_elements(self):
         """返回组件的输入元素"""

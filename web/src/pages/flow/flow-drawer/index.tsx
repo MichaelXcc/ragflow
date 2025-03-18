@@ -4,7 +4,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Drawer, Flex, Form, Input } from 'antd';
 import { get, isPlainObject, lowerFirst } from 'lodash';
 import { Play } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BeginId, Operator, operatorMap } from '../constant';
 import AkShareForm from '../form/akshare-form';
 import AnswerForm from '../form/answer-form';
@@ -43,7 +43,6 @@ import { useHandleFormValuesChange, useHandleNodeNameChange } from '../hooks';
 import OperatorIcon from '../operator-icon';
 import {
   buildCategorizeListFromObject,
-  getDrawerWidth,
   needsSingleStepDebugging,
 } from '../utils';
 import SingleDebugDrawer from './single-debug-drawer';
@@ -103,6 +102,10 @@ const FormMap = {
 
 const EmptyContent = () => <div></div>;
 
+// 最小抽屉宽度和默认宽度
+const MIN_DRAWER_WIDTH = 450;
+const DEFAULT_DRAWER_WIDTH = 580;
+
 const FormDrawer = ({
   visible,
   hideModal,
@@ -120,9 +123,77 @@ const FormDrawer = ({
   });
   const previousId = useRef<string | undefined>(node?.id);
 
+  // 添加抽屉宽度状态
+  const [drawerWidth, setDrawerWidth] = useState(DEFAULT_DRAWER_WIDTH);
+  // 添加拖拽状态
+  const [isDragging, setIsDragging] = useState(false);
+  // 记录初始位置
+  const dragStartRef = useRef({ x: 0, width: 0 });
+
   const { t } = useTranslate('flow');
 
   const { handleValuesChange } = useHandleFormValuesChange(node?.id);
+
+  // 处理拖拽开始
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const startX = e.clientX;
+      const startWidth = drawerWidth;
+
+      setIsDragging(true);
+      dragStartRef.current = {
+        x: startX,
+        width: startWidth,
+      };
+
+      document.body.style.cursor = 'col-resize';
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        moveEvent.preventDefault();
+        moveEvent.stopPropagation();
+
+        if (!isDragging) return;
+
+        const deltaX = dragStartRef.current.x - moveEvent.clientX;
+        const newWidth = Math.max(
+          MIN_DRAWER_WIDTH,
+          dragStartRef.current.width + deltaX,
+        );
+        setDrawerWidth(newWidth);
+      };
+
+      const handleMouseUp = (upEvent: MouseEvent) => {
+        upEvent.preventDefault();
+        upEvent.stopPropagation();
+
+        setIsDragging(false);
+        document.body.style.cursor = '';
+
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+
+      // 直接添加事件监听器，不依赖状态更新
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    },
+    [drawerWidth],
+  );
+
+  // 卸载时清理监听器 - 这个可以保留为安全措施
+  useEffect(() => {
+    return () => {
+      document.body.style.cursor = '';
+      // 移除可能存在的所有相关事件监听器
+      const cleanupEvents = () => {
+        document.removeEventListener('mousemove', cleanupEvents);
+        document.removeEventListener('mouseup', cleanupEvents);
+      };
+    };
+  }, []);
 
   useEffect(() => {
     if (visible) {
@@ -189,10 +260,15 @@ const FormDrawer = ({
       open={visible}
       getContainer={false}
       mask={false}
-      width={getDrawerWidth()}
+      width={drawerWidth}
       closeIcon={null}
       rootClassName={styles.formDrawer}
     >
+      {/* 添加拖拽把手 */}
+      <div
+        className={styles.drawerResizeHandle}
+        onMouseDown={handleDragStart}
+      />
       <section className={styles.formWrapper}>
         {visible && (
           <FlowFormContext.Provider value={node}>

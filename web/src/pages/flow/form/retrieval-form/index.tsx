@@ -41,7 +41,7 @@ const RetrievalForm = ({ onValuesChange, form, node }: IOperatorForm) => {
       ></SimilaritySlider>
       <TopNItem></TopNItem>
       <Rerank></Rerank>
-      <TavilyItem name={'tavily_api_key'}></TavilyItem>
+      <TavilyItem name={'api_key'}></TavilyItem>
       <UseKnowledgeGraphItem filedName={'use_kg'}></UseKnowledgeGraphItem>
       <KnowledgeBaseItem></KnowledgeBaseItem>
       <Form.Item

@@ -109,7 +109,35 @@ def getsse(canvas_id):
 @validate_request("id")
 @login_required
 def run():
+    """
+    执行画布操作的API端点
+    
+    该函数处理画布执行请求，支持流式输出和一次性输出两种模式。
+    流式输出适合长时间运行的操作，可以实时返回中间结果。
+    
+    请求参数:
+        id (str): 必需，画布ID，用于查找对应的画布数据
+        stream (bool): 可选，默认为True，决定是否使用流式输出
+        message (str): 可选，用户输入的消息，会被添加到画布的消息列表中
+        message_id (str): 可选，消息ID，如果未提供会自动生成
+    
+    返回值:
+        如果stream=True: 返回一个流式响应，包含实时执行结果
+        如果stream=False: 返回一个JSON响应，包含最终执行结果
+    
+    权限要求:
+        只有画布的所有者才能执行该操作
+    
+    执行流程:
+        1. 验证请求参数和用户权限
+        2. 获取画布数据并初始化Canvas对象
+        3. 如有用户消息，添加到消息历史
+        4. 执行画布并收集结果
+        5. 更新画布状态并保存到数据库
+        6. 返回执行结果
+    """
     req = request.json
+    print(f"----req: {req}")
     stream = req.get("stream", True)
     e, cvs = UserCanvasService.get_by_id(req["id"])
     if not e:
@@ -173,7 +201,7 @@ def run():
         resp.headers.add_header("X-Accel-Buffering", "no")
         resp.headers.add_header("Content-Type", "text/event-stream; charset=utf-8")
         return resp
-
+    print(f"----: {canvas}")
     for answer in canvas.run(stream=False):
         if answer.get("running_status"):
             continue
@@ -181,6 +209,7 @@ def run():
         canvas.messages.append({"role": "assistant", "content": final_ans["content"], "id": message_id})
         if final_ans.get("reference"):
             canvas.reference.append(final_ans["reference"])
+        
         cvs.dsl = json.loads(str(canvas))
         UserCanvasService.update_by_id(req["id"], cvs.to_dict())
         return get_json_result(data={"answer": final_ans["content"], "reference": final_ans.get("reference", [])})

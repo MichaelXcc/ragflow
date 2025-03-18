@@ -8,19 +8,19 @@ import {
   FormatPainterOutlined,
   FullscreenOutlined,
   PlayCircleOutlined,
-  SnippetsOutlined,
 } from '@ant-design/icons';
 import Editor, { useMonaco } from '@monaco-editor/react';
 import {
   Button,
   Dropdown,
   Form,
+  Input,
   MenuProps,
   Select,
   Space,
   Spin,
-  Switch,
   Tooltip,
+  Typography,
   message,
 } from 'antd';
 import axios from 'axios';
@@ -30,36 +30,37 @@ import { useTranslation } from 'react-i18next';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
 import { IOperatorForm } from '../interface';
+import InputVariableSelector from './components/input-variable-selector';
 
 const languageOptions = [
   { value: 'python', label: 'Python' },
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'typescript', label: 'TypeScript' },
-  { value: 'shell', label: 'Shell (Bash)' },
-  { value: 'sql', label: 'SQL' },
-  { value: 'json', label: 'JSON' },
-  { value: 'html', label: 'HTML' },
-  { value: 'css', label: 'CSS' },
-  { value: 'markdown', label: 'Markdown' },
-  { value: 'yaml', label: 'YAML' },
+  // { value: 'javascript', label: 'JavaScript' },
+  // { value: 'typescript', label: 'TypeScript' },
+  // { value: 'shell', label: 'Shell (Bash)' },
+  // { value: 'sql', label: 'SQL' },
+  // { value: 'json', label: 'JSON' },
+  // { value: 'html', label: 'HTML' },
+  // { value: 'css', label: 'CSS' },
+  // { value: 'markdown', label: 'Markdown' },
+  // { value: 'yaml', label: 'YAML' },
 ];
 
 // 预设语言范例代码
 const languageTemplates: Record<string, string> = {
   python:
-    '# Python 代码示例\ndef hello_world():\n    print("Hello, World!")\n\nif __name__ == "__main__":\n    hello_world()',
-  javascript:
-    '// JavaScript 代码示例\nfunction helloWorld() {\n    console.log("Hello, World!");\n}\n\nhelloWorld();',
-  typescript:
-    '// TypeScript 代码示例\nfunction helloWorld(name: string): void {\n    console.log(`Hello, ${name}!`);\n}\n\nhelloWorld("World");',
-  shell: '#!/bin/bash\n# Shell 脚本示例\necho "Hello, World!"',
-  sql: '-- SQL 查询示例\nSELECT * FROM users WHERE active = true;',
-  json: '{\n    "name": "示例",\n    "type": "JSON",\n    "properties": {\n        "isValid": true,\n        "count": 42\n    }\n}',
-  html: '<!DOCTYPE html>\n<html>\n<head>\n    <title>示例页面</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>',
-  css: '/* CSS 样式示例 */\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n}\n\nh1 {\n    color: #333;\n    text-align: center;\n}',
-  markdown:
-    '# Markdown 示例\n\n## 子标题\n\n- 列表项 1\n- 列表项 2\n- 列表项 3\n\n**粗体文本** 和 *斜体文本*',
-  yaml: '# YAML 示例\nname: 示例配置\nversion: 1.0\nenvironment:\n  production: false\ndependencies:\n  - name: react\n    version: ^18.2.0',
+    'def main(arg1: str, arg2: str) -> dict:\n    return {\n        "result": arg1 + arg2,\n    }',
+  // javascript:
+  //   '// JavaScript 代码示例\nfunction helloWorld() {\n    console.log("Hello, World!");\n}\n\nhelloWorld();',
+  // typescript:
+  //   '// TypeScript 代码示例\nfunction helloWorld(name: string): void {\n    console.log(`Hello, ${name}!`);\n}\n\nhelloWorld("World");',
+  // shell: '#!/bin/bash\n# Shell 脚本示例\necho "Hello, World!"',
+  // sql: '-- SQL 查询示例\nSELECT * FROM users WHERE active = true;',
+  // json: '{\n    "name": "示例",\n    "type": "JSON",\n    "properties": {\n        "isValid": true,\n        "count": 42\n    }\n}',
+  // html: '<!DOCTYPE html>\n<html>\n<head>\n    <title>示例页面</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>',
+  // css: '/* CSS 样式示例 */\nbody {\n    font-family: Arial, sans-serif;\n    background-color: #f0f0f0;\n}\n\nh1 {\n    color: #333;\n    text-align: center;\n}',
+  // markdown:
+  //   '# Markdown 示例\n\n## 子标题\n\n- 列表项 1\n- 列表项 2\n- 列表项 3\n\n**粗体文本** 和 *斜体文本*',
+  // yaml: '# YAML 示例\nname: 示例配置\nversion: 1.0\nenvironment:\n  production: false\ndependencies:\n  - name: react\n    version: ^18.2.0',
 };
 
 // 代码片段库
@@ -68,6 +69,11 @@ const codeSnippets: Record<
   Array<{ label: string; description: string; code: string }>
 > = {
   python: [
+    {
+      label: '默认模板',
+      description: '标准Python函数模板',
+      code: 'def main(arg1: str, arg2: str) -> dict:\n    return {\n        "result": arg1 + arg2,\n    }',
+    },
     {
       label: '文件读取',
       description: '读取文本文件内容',
@@ -126,7 +132,68 @@ Object.keys(languageTemplates).forEach((lang) => {
   }
 });
 
-const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
+/**
+ * 输出变量选择器组件
+ */
+const OutputVariableSelector = () => {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className="output-variable-container"
+      style={{ marginTop: '24px', marginBottom: '24px' }}
+    >
+      <Typography.Title
+        level={5}
+        style={{
+          fontSize: '16px',
+          fontWeight: 500,
+          color: '#333',
+          marginBottom: '16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        输出变量
+      </Typography.Title>
+
+      <div
+        className="output-variable-row"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '12px',
+          backgroundColor: '#f5f7fa',
+          borderRadius: '6px',
+          padding: '10px',
+        }}
+      >
+        <div style={{ flex: '0 0 150px' }}>
+          <Input value="result" disabled />
+        </div>
+
+        <div style={{ flex: 1, marginLeft: '12px', marginRight: '12px' }}>
+          <Select
+            value="String"
+            style={{ width: '100%' }}
+            options={[{ value: 'String', label: 'String' }]}
+            disabled
+          />
+        </div>
+
+        <Button
+          type="text"
+          icon={<DeleteOutlined />}
+          disabled
+          style={{ color: '#999' }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const CodeForm = ({ form, onValuesChange, node }: IOperatorForm) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const monaco = useMonaco();
@@ -134,6 +201,13 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [executeResult, setExecuteResult] = useState<any>(null);
   const [executeLoading, setExecuteLoading] = useState(false);
+  // 添加编辑器引用
+  const editorRef = useCallback((editor: any) => {
+    if (editor) {
+      // 保存编辑器实例引用
+      (window as any).monacoEditor = editor;
+    }
+  }, []);
 
   // 使用调试hook
   const { data: flowData } = useFetchFlow();
@@ -198,17 +272,20 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
   }, [form]);
 
   const handleFormatCode = useCallback(() => {
-    if (monaco) {
-      // 获取当前编辑器实例并格式化代码
-      const editor = monaco.editor.getModels()[0];
+    try {
+      // 使用全局保存的编辑器实例
+      const editor = (window as any).monacoEditor;
       if (editor) {
-        monaco.editor
-          .getEditors()[0]
-          .getAction('editor.action.formatDocument')
-          ?.run();
+        editor.getAction('editor.action.formatDocument')?.run();
+        message.success('代码已格式化');
+      } else {
+        message.error('找不到编辑器实例');
       }
+    } catch (error) {
+      console.error('格式化失败:', error);
+      message.error('格式化失败');
     }
-  }, [monaco]);
+  }, []);
 
   const handleClearCode = useCallback(() => {
     form?.setFieldsValue({ code: '' });
@@ -217,12 +294,10 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
 
   const handleInsertSnippet = useCallback(
     (snippet: string) => {
-      const currentCode = form?.getFieldValue('code') || '';
-      const newCode = currentCode ? `${currentCode}\n\n${snippet}` : snippet;
-      form?.setFieldsValue({ code: newCode });
+      form?.setFieldsValue({ code: snippet });
       onValuesChange?.(
-        { code: newCode },
-        { ...form?.getFieldsValue(), code: newCode },
+        { code: snippet },
+        { ...form?.getFieldsValue(), code: snippet },
       );
     },
     [form, onValuesChange],
@@ -272,6 +347,7 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
   const handleRunCode = useCallback(async () => {
     const code = form?.getFieldValue('code');
     const language = form?.getFieldValue('language');
+    const variables = form?.getFieldValue('variables') || [];
 
     if (!code) {
       message.error('代码不能为空');
@@ -283,6 +359,7 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
       const response = await axios.post('/v1/canvas/execute_code', {
         code,
         language,
+        variables, // 将变量一起传递给后端
       });
 
       if (response.data.code === 0) {
@@ -300,14 +377,21 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
       setExecuteLoading(false);
     }
   }, [form]);
-
+  console.log('node', node);
   return (
     <Form
       form={form}
       layout="vertical"
-      initialValues={{ language: 'python', code: languageTemplates.python }}
+      initialValues={{
+        language: 'python',
+        code: languageTemplates.python,
+        variables: [],
+      }}
     >
-      <div
+      {/* 输入变量选择器 - 允许用户定义变量并选择上一个节点的输出作为输入 */}
+      {/* 这些变量可以在代码中被访问，用于数据处理和逻辑编写 */}
+      <InputVariableSelector node={node} />
+      {/* <div
         style={{
           marginBottom: '16px',
           display: 'flex',
@@ -348,18 +432,17 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
             />
           </Tooltip>
         </Space>
-      </div>
+      </div> */}
 
       <Form.Item
         name="code"
-        label={<span style={{ color: '#333' }}>{t('flow.code')}</span>}
         rules={[{ required: true, message: t('flow.pleaseEnterCode') }]}
       >
         <div className="code-editor-container" style={{ position: 'relative' }}>
           <div
             style={{
-              border: '1px solid #d9d9d9',
-              borderRadius: '2px',
+              border: '1px solid #e0e0e0',
+              borderRadius: '12px',
               overflow: 'hidden',
               position: isFullscreen ? 'fixed' : 'relative',
               top: isFullscreen ? '50px' : 'auto',
@@ -368,53 +451,94 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
               bottom: isFullscreen ? '0' : 'auto',
               zIndex: isFullscreen ? 1000 : 'auto',
               width: isFullscreen ? '100%' : 'auto',
-              backgroundColor: '#fff',
+              backgroundColor: '#f5f7fa',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
             }}
           >
             <div
               style={{
-                padding: '8px',
-                borderBottom: '1px solid #d9d9d9',
+                padding: '8px 12px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#f5f7fa',
                 color: '#333',
+                borderBottom: '0',
               }}
             >
-              <Space>
-                <Dropdown menu={{ items: getSnippetMenuItems() }}>
-                  <Button
-                    size="small"
-                    icon={<SnippetsOutlined />}
-                    style={{ color: '#333' }}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Dropdown
+                  menu={{
+                    items: languageOptions.map((option) => ({
+                      key: option.value,
+                      label: option.label,
+                      onClick: () => handleLanguageChange(option.value),
+                    })),
+                  }}
+                >
+                  <div
+                    className="language-selector"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      transition: 'background-color 0.2s',
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = '#f0f2f5')
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = 'transparent')
+                    }
                   >
-                    插入代码片段 <DownOutlined />
-                  </Button>
+                    <span
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        color: '#444',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {currentLanguage}3
+                    </span>
+                    <DownOutlined
+                      style={{
+                        fontSize: '10px',
+                        marginLeft: '4px',
+                        color: '#666',
+                      }}
+                    />
+                  </div>
                 </Dropdown>
-              </Space>
+              </div>
               <Space>
-                <Tooltip title="复制代码">
-                  <Button
-                    type="text"
-                    icon={<CopyOutlined style={{ color: '#333' }} />}
-                    size="small"
-                    onClick={handleCopyCode}
-                  />
-                </Tooltip>
                 <Tooltip title="格式化代码">
                   <Button
                     type="text"
-                    icon={<FormatPainterOutlined style={{ color: '#333' }} />}
+                    icon={
+                      <FormatPainterOutlined
+                        style={{ color: '#1677ff', fontSize: '14px' }}
+                      />
+                    }
                     size="small"
                     onClick={handleFormatCode}
                   />
                 </Tooltip>
-                <Tooltip title="清空代码">
+                <Tooltip title="复制代码">
                   <Button
                     type="text"
-                    icon={<DeleteOutlined style={{ color: '#333' }} />}
+                    icon={<CopyOutlined style={{ color: '#555' }} />}
                     size="small"
-                    onClick={handleClearCode}
+                    onClick={handleCopyCode}
+                  />
+                </Tooltip>
+                <Tooltip title={t('flow.fullscreen')}>
+                  <Button
+                    type="text"
+                    icon={<FullscreenOutlined style={{ color: '#555' }} />}
+                    size="small"
+                    onClick={toggleFullscreen}
                   />
                 </Tooltip>
               </Space>
@@ -425,7 +549,24 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
               value={currentCode}
               onChange={handleEditorChange}
               theme="light"
-              options={editorOptions}
+              onMount={editorRef}
+              options={{
+                ...editorOptions,
+                fontSize: 14,
+                lineHeight: 22,
+                fontFamily: '"Menlo", "Monaco", "Courier New", monospace',
+                renderWhitespace: 'none',
+                renderLineHighlight: 'all',
+                scrollBeyondLastLine: false,
+                minimap: { enabled: false },
+                padding: { top: 15, bottom: 15 },
+                overviewRulerBorder: false,
+                hideCursorInOverviewRuler: true,
+                overviewRulerLanes: 0,
+                folding: true,
+                glyphMargin: false,
+                contextmenu: false,
+              }}
             />
             {isFullscreen && (
               <div
@@ -511,6 +652,9 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
         </div>
       </div>
 
+      {/* 输出变量部分 */}
+      <OutputVariableSelector />
+
       {/* 运行按钮 */}
       <div style={{ marginTop: '16px' }}>
         <Button
@@ -518,7 +662,6 @@ const CodeForm = ({ form, onValuesChange }: IOperatorForm) => {
           icon={<PlayCircleOutlined />}
           onClick={handleRunCode}
           loading={executeLoading}
-          // disabled={!nodeId}
           style={{ width: '100%' }}
         >
           运行代码

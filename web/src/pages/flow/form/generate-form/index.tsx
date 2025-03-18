@@ -7,7 +7,6 @@ import { IOperatorForm } from '../../interface';
 
 const GenerateForm = ({ onValuesChange, form }: IOperatorForm) => {
   const { t } = useTranslate('flow');
-
   return (
     <Form
       name="basic"
