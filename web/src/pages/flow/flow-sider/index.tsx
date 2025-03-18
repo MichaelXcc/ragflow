@@ -34,6 +34,7 @@ const FlowSide = ({ setCollapsed, collapsed }: IProps) => {
       collapsedWidth={0}
       theme={'light'}
       onCollapse={(value) => setCollapsed(value)}
+      style={{ backgroundColor: '#FFFFFF' }}
     >
       <Flex vertical gap={10} className={styles.siderContent}>
         {componentMenuList.map((x) => {

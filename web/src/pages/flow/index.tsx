@@ -7,6 +7,7 @@ import Sider from './flow-sider';
 import FlowHeader from './header';
 import { useCopyPaste } from './hooks';
 import { useFetchDataOnMount } from './hooks/use-fetch-data';
+import styles from './index.less';
 
 const { Content } = Layout;
 
@@ -22,19 +23,19 @@ function RagFlow() {
   useCopyPaste();
 
   return (
-    <Layout>
+    <Layout className={styles.mainLayout}>
       <ReactFlowProvider>
         <Sider setCollapsed={setCollapsed} collapsed={collapsed}></Sider>
         <Layout>
-          <FlowHeader
-            showChatDrawer={showChatDrawer}
-            chatDrawerVisible={chatDrawerVisible}
-          ></FlowHeader>
-          <Content style={{ margin: 0 }}>
+          <Content className={styles.contentContainer}>
             <FlowCanvas
               drawerVisible={chatDrawerVisible}
               hideDrawer={hideChatDrawer}
             ></FlowCanvas>
+            <FlowHeader
+              showChatDrawer={showChatDrawer}
+              chatDrawerVisible={chatDrawerVisible}
+            ></FlowHeader>
           </Content>
         </Layout>
       </ReactFlowProvider>

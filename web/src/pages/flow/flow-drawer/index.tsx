@@ -263,6 +263,12 @@ const FormDrawer = ({
       width={drawerWidth}
       closeIcon={null}
       rootClassName={styles.formDrawer}
+      style={{
+        height: '80vh',
+        top: '20vh',
+        marginTop: '48px',
+        borderRadius: '16px 16px 16px 16px',
+      }}
     >
       {/* 添加拖拽把手 */}
       <div
