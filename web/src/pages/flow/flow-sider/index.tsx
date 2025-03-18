@@ -39,9 +39,9 @@ const FlowSide = ({ setCollapsed, collapsed }: IProps) => {
         {componentMenuList.map((x) => {
           return (
             <React.Fragment key={x.name}>
-              {x.name === Operator.Note && (
+              {/* {x.name === Operator.Note && (
                 <Divider style={dividerProps}></Divider>
-              )}
+              )} */}
               {x.name === Operator.DuckDuckGo && (
                 <Divider style={dividerProps}></Divider>
               )}

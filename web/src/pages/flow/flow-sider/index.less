@@ -2,6 +2,11 @@
   :global(.ant-card-body) {
     padding: 10px;
   }
+  :global(.ant-card) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
   .cubeIcon {
     &:hover {
       cursor: pointer;
@@ -13,4 +18,16 @@
   padding: 10px 4px;
   overflow: auto;
   height: calc(100vh - 80px);
+  background: transparent !important;
+}
+
+:global(.ant-layout-sider) {
+  margin-left: 16px;
+  background: transparent !important;
+  z-index: 10;
+  position: relative;
+}
+
+:global(.ant-layout-sider-children) {
+  background: transparent !important;
 }
