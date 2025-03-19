@@ -1,8 +1,12 @@
 import {
+  Answer,
   GitHubIcon,
   KeywordIcon,
+  LLM,
   QWeatherIcon,
+  Type,
   WikipediaIcon,
+  Zhishijiansuo,
 } from '@/assets/icon/Icon';
 import { ReactComponent as AkShareIcon } from '@/assets/svg/akshare.svg';
 import { ReactComponent as ArXivIcon } from '@/assets/svg/arxiv.svg';
@@ -46,12 +50,8 @@ export enum Channel {
 
 import {
   BranchesOutlined,
-  DatabaseOutlined,
   FormOutlined,
-  MergeCellsOutlined,
   MessageOutlined,
-  RocketOutlined,
-  SendOutlined,
 } from '@ant-design/icons';
 import upperFirst from 'lodash/upperFirst';
 import {
@@ -113,11 +113,11 @@ export const CommonOperatorList = Object.values(Operator).filter(
 );
 
 export const operatorIconMap = {
-  [Operator.Retrieval]: RocketOutlined,
-  [Operator.Generate]: MergeCellsOutlined,
-  [Operator.Answer]: SendOutlined,
+  [Operator.Retrieval]: Zhishijiansuo,
+  [Operator.Generate]: LLM,
+  [Operator.Answer]: Answer,
   [Operator.Begin]: BeginIcon,
-  [Operator.Categorize]: DatabaseOutlined,
+  [Operator.Categorize]: Type,
   [Operator.Message]: MessageOutlined,
   [Operator.Relevant]: BranchesOutlined,
   [Operator.RewriteQuestion]: FormOutlined,

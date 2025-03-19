@@ -50,8 +50,9 @@ import {
   useClickDialogCard,
   useFetchNextDialogList,
   useGetChatSearchParams,
+  useRemoveNextDialog,
 } from '@/hooks/chat-hooks';
-import { useTranslate } from '@/hooks/common-hooks';
+import { useShowDeleteConfirm, useTranslate } from '@/hooks/common-hooks';
 import { useSetSelectedRecord } from '@/hooks/logic-hooks';
 import { IDialog } from '@/interfaces/database/chat';
 import { PictureInPicture2 } from 'lucide-react';
@@ -106,6 +107,8 @@ const Chat = () => {
   const [workspaceItems, setWorkspaceItems] = useState<
     Array<{ id: string; type: string }>
   >([]);
+  const { removeDialog } = useRemoveNextDialog();
+  const showDeleteConfirm = useShowDeleteConfirm();
 
   const handleAppCardEnter = (id: string) => () => {
     handleItemEnter(id);
@@ -123,12 +126,38 @@ const Chat = () => {
       showDialogEditModal(dialogId);
     };
 
+  // 删除对话处理函数
   const handleRemoveDialog =
     (dialogId: string): MenuItemProps['onClick'] =>
     ({ domEvent }) => {
       domEvent.preventDefault();
       domEvent.stopPropagation();
-      onRemoveDialog([dialogId]);
+
+      // 使用从组件顶层获取的hooks结果
+      showDeleteConfirm({
+        onOk: async () => {
+          // 执行删除操作
+          const result = await removeDialog([dialogId]);
+
+          // 如果删除成功，从工作区中同步删除
+          if (result === 0) {
+            const updatedWorkspaceItems = workspaceItems.filter(
+              (item) => !(item.id === dialogId && item.type === 'app'),
+            );
+
+            // 更新工作区状态
+            setWorkspaceItems(updatedWorkspaceItems);
+
+            // 保存到 localStorage
+            localStorage.setItem(
+              'workspaceItems',
+              JSON.stringify(updatedWorkspaceItems),
+            );
+          }
+
+          return result;
+        },
+      });
     };
 
   const handleShowOverviewModal =
@@ -374,7 +403,11 @@ const Chat = () => {
           </Flex>
 
           {/* 右侧应用列表 */}
-          <Flex className={styles.appListContainer} vertical>
+          <Flex
+            className={styles.appListContainer}
+            vertical
+            style={{ marginLeft: '20px' }}
+          >
             <Flex
               className={styles.appListHeader}
               justify="space-between"
@@ -468,16 +501,16 @@ const Chat = () => {
             })}
           >
             <Flex flex={1} vertical>
+              <Space size={10}>
+                <Button
+                  type="text"
+                  icon={<AppstoreOutlined />}
+                  onClick={handleBackToApps}
+                >
+                  {t('backToApps')}
+                </Button>
+              </Space>
               <Flex className={styles.assistantInfoContainer}>
-                <Space size={10}>
-                  <Button
-                    type="text"
-                    icon={<AppstoreOutlined />}
-                    onClick={handleBackToApps}
-                  >
-                    {t('backToApps')}
-                  </Button>
-                </Space>
                 {dialogList.find((x) => x.id === selectedDialog) && (
                   <Space size={10}>
                     <Avatar

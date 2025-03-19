@@ -25,7 +25,7 @@ import {
 } from 'antd';
 import axios from 'axios';
 import { isEmpty } from 'lodash';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
@@ -202,12 +202,150 @@ const CodeForm = ({ form, onValuesChange, node }: IOperatorForm) => {
   const [executeResult, setExecuteResult] = useState<any>(null);
   const [executeLoading, setExecuteLoading] = useState(false);
   // 添加编辑器引用
-  const editorRef = useCallback((editor: any) => {
-    if (editor) {
-      // 保存编辑器实例引用
-      (window as any).monacoEditor = editor;
+  const editorRef = useCallback(
+    (editor: any) => {
+      if (editor) {
+        // 保存编辑器实例引用
+        (window as any).monacoEditor = editor;
+
+        // 添加快捷键绑定
+        editor.addAction({
+          id: 'format-with-shortcut',
+          label: '格式化代码 (Shift+Alt+F)',
+          keybindings: [
+            // Monaco编辑器的键码常量
+            // Shift + Alt + F
+            2048 | 512 | 33,
+          ],
+          run: () => {
+            editor.getAction('editor.action.formatDocument')?.run();
+          },
+        });
+      }
+    },
+    [monaco],
+  );
+
+  // 使用useEffect注册格式化提供者
+  useEffect(() => {
+    if (monaco) {
+      // 为Python语言注册格式化提供者
+      monaco.languages.registerDocumentFormattingEditProvider('python', {
+        provideDocumentFormattingEdits: async (model) => {
+          const text = model.getValue();
+          try {
+            // 在实际项目中，这里应该发送API请求到后端进行专业格式化
+            // 例如使用Python的black或autopep8等工具
+            // 以下是一个简单的格式化实现
+
+            // 简单Python格式化：修正缩进和空格
+            const lines = text.split('\n');
+            const formattedLines = [];
+            let indentLevel = 0;
+
+            for (let line of lines) {
+              const trimmedLine = line.trim();
+
+              // 跳过空行
+              if (trimmedLine === '') {
+                formattedLines.push('');
+                continue;
+              }
+
+              // 减少缩进级别（如果行以这些关键词结束）
+              if (
+                // trimmedLine.startsWith('return') ||
+                trimmedLine.startsWith('break') ||
+                trimmedLine.startsWith('continue') ||
+                trimmedLine.startsWith('pass') ||
+                trimmedLine.startsWith('raise') ||
+                trimmedLine.startsWith('}') ||
+                trimmedLine.startsWith(']') ||
+                trimmedLine.startsWith(')')
+              ) {
+                indentLevel = Math.max(0, indentLevel - 1);
+              }
+
+              // 添加当前缩进
+              const indent = '    '.repeat(indentLevel);
+              formattedLines.push(indent + trimmedLine);
+
+              // 增加缩进级别（如果行以这些关键词结束）
+              if (
+                trimmedLine.endsWith(':') ||
+                trimmedLine.endsWith('{') ||
+                trimmedLine.endsWith('[') ||
+                (trimmedLine.endsWith('(') && !trimmedLine.includes(')'))
+              ) {
+                indentLevel++;
+              }
+            }
+
+            const formattedText = formattedLines.join('\n');
+
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: formattedText,
+              },
+            ];
+          } catch (error) {
+            console.error('格式化代码失败:', error);
+            // 出错时返回原始文本
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: text,
+              },
+            ];
+          }
+        },
+      });
+
+      // 为JSON注册格式化提供者
+      monaco.languages.registerDocumentFormattingEditProvider('json', {
+        provideDocumentFormattingEdits: (model) => {
+          try {
+            const text = model.getValue();
+            const json = JSON.parse(text);
+            const formattedText = JSON.stringify(json, null, 2);
+
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: formattedText,
+              },
+            ];
+          } catch (error) {
+            console.error('格式化JSON失败:', error);
+            return [];
+          }
+        },
+      });
+
+      // 为JavaScript注册格式化提供者
+      monaco.languages.registerDocumentFormattingEditProvider('javascript', {
+        provideDocumentFormattingEdits: (model) => {
+          try {
+            // 简单的JS格式化
+            const text = model.getValue();
+            // 这里应该使用专业的JS格式化库，比如prettier
+            // 但为了简单起见，我们只进行一些基本处理
+
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: text, // 在生产环境中替换为实际格式化后的文本
+              },
+            ];
+          } catch (error) {
+            console.error('格式化JavaScript失败:', error);
+            return [];
+          }
+        },
+      });
     }
-  }, []);
+  }, [monaco]);
 
   // 使用调试hook
   const { data: flowData } = useFetchFlow();

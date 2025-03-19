@@ -151,11 +151,7 @@ const MessageItem = ({
             ) : avatarDialog ? (
               <Avatar size={40} src={avatarDialog} />
             ) : (
-              <Avatar
-                size={40}
-                style={{ width: '10%', height: '10%' }}
-                src={'/tubiao1.png'}
-              />
+              <Avatar size={40} src={'/tubiao1.png'} />
             ))}
 
           <Flex vertical gap={8} flex={1}>

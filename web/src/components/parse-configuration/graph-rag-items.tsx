@@ -62,16 +62,22 @@ const GraphRagItems = ({ marginBottom = false }: GraphRagItemsProps) => {
 
   return (
     <DatasetConfigurationContainer className={cn({ 'mb-4': marginBottom })}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span>{t('useGraphRag')}</span>
+        <Form.Item
+          name={['parser_config', 'graphrag', 'use_graphrag']}
+          // label={t('useGraphRag')}
+          noStyle
+          initialValue={false}
+          valuePropName="checked"
+          tooltip={t('useGraphRagTip')}
+        >
+          <Switch />
+        </Form.Item>
+      </div>
+
       <Form.Item
-        name={['parser_config', 'graphrag', 'use_graphrag']}
-        label={t('useGraphRag')}
-        initialValue={false}
-        valuePropName="checked"
-        tooltip={t('useGraphRagTip')}
-      >
-        <Switch />
-      </Form.Item>
-      <Form.Item
+        noStyle
         shouldUpdate={(prevValues, curValues) =>
           prevValues.parser_config.graphrag.use_graphrag !==
           curValues.parser_config.graphrag.use_graphrag

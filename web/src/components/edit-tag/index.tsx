@@ -93,22 +93,28 @@ const EditTag = ({ value = [], onChange }: EditTagsProps) => {
           appear={false}
         >
           {tagChild}
+          {inputVisible ? (
+            <Input
+              ref={inputRef}
+              type="text"
+              size="small"
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputConfirm}
+              onPressEnter={handleInputConfirm}
+            />
+          ) : (
+            <Tag onClick={showInput} style={tagPlusStyle}>
+              <PlusOutlined
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              />
+            </Tag>
+          )}
         </TweenOneGroup>
-      )}
-      {inputVisible ? (
-        <Input
-          ref={inputRef}
-          type="text"
-          size="small"
-          value={inputValue}
-          onChange={handleInputChange}
-          onBlur={handleInputConfirm}
-          onPressEnter={handleInputConfirm}
-        />
-      ) : (
-        <Tag onClick={showInput} style={tagPlusStyle}>
-          <PlusOutlined />
-        </Tag>
       )}
     </div>
   );
