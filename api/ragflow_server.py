@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--version", default=False, help="RAGFlow version", action="store_true"
+        "--version", default=False, help="LeXStudio version", action="store_true"
     )
     parser.add_argument(
         "--debug", default=True, help="debug mode", action="store_true"
@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     # start http server
     try:
-        logging.info("RAGFlow HTTP server start...")
+        logging.info("LeXStudio HTTP server start...")
         run_simple(
             hostname=settings.HOST_IP,
             port=settings.HOST_PORT,

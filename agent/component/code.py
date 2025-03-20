@@ -71,16 +71,20 @@ class Code(ComponentBase, ABC):
         """根据语言类型执行代码"""
         language = self._param.language.lower()
         code = self._param.code
+        # TODO：获取用户输入可以增加额外处理
+        if self._canvas:
+            inputs = self._canvas.messages[-1]["content"]
+        else:
+            inputs = ""
         
         # print(f"self._param: {self._param}")
-        print(f"self._param.variables: {self._param.variables}")
+        # print(f"self._param.variables: {self._param.variables}")
         result = {}
 
         try:
             # 根据语言类型执行代码
             if language == "python":
-                python_result = self._execute_python(code)
-                print(f"python_result: {python_result}")
+                python_result = self._execute_python(code, inputs)
                 result = python_result
             else:
                 result= f"不支持的语言类型: {language}"
@@ -92,7 +96,7 @@ class Code(ComponentBase, ABC):
         
         return result
     
-    def _execute_python(self, code):
+    def _execute_python(self, code, inputs):
         """执行Python代码，直接返回执行结果"""
         
         # 捕获标准输出和错误
@@ -118,8 +122,8 @@ class Code(ComponentBase, ABC):
                     
                     # 执行main函数并直接返回结果
                     if params:
-                        # 创建None参数列表
-                        args = [None] * len(params)
+                        # TODO 多参数处理
+                        args = [inputs]
                         # 执行main函数并获取结果
                         return local_vars["main"](*args)
                     else:
@@ -130,7 +134,7 @@ class Code(ComponentBase, ABC):
                     return local_vars["_result"]
                 
                 # 如果没有main函数和_result，返回标准输出
-                print(f"stdout_capture.getvalue(): {stdout_capture.getvalue()}")
+                # print(f"stdout_capture.getvalue(): {stdout_capture.getvalue()}")
                 output = stdout_capture.getvalue().strip()
                 if output:
                     return output
@@ -144,7 +148,8 @@ class Code(ComponentBase, ABC):
             stderr_output = stderr_capture.getvalue()
             if stderr_output:
                 error_msg += "\n" + stderr_output
-            return f"错误: {error_msg}"
+            logger.error(f"Code execution error: {error_msg}")
+            return f"请输入正确信息"
     
     def get_input_elements(self):
         """返回组件的输入元素"""

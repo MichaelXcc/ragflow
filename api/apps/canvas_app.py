@@ -137,7 +137,6 @@ def run():
         6. 返回执行结果
     """
     req = request.json
-    print(f"----req: {req}")
     stream = req.get("stream", True)
     e, cvs = UserCanvasService.get_by_id(req["id"])
     if not e:
@@ -201,7 +200,6 @@ def run():
         resp.headers.add_header("X-Accel-Buffering", "no")
         resp.headers.add_header("Content-Type", "text/event-stream; charset=utf-8")
         return resp
-    print(f"----: {canvas}")
     for answer in canvas.run(stream=False):
         if answer.get("running_status"):
             continue
@@ -253,6 +251,7 @@ def input_elements():
                 code=RetCode.OPERATING_ERROR)
 
         canvas = Canvas(json.dumps(user_canvas.dsl), current_user.id)
+        logging.info(f"canvas.get_component_input_elements(cpn_id): {canvas}")
         return get_json_result(data=canvas.get_component_input_elements(cpn_id))
     except Exception as e:
         return server_error_response(e)
@@ -308,14 +307,13 @@ def test_db_connect():
 
 @manager.route('/execute_code', methods=['POST'])  # noqa: F821
 @validate_request("code", "language")
-# @login_required
 def execute_code():
     """
     专门用于执行Code节点的代码，不需要加载整个画布
     """
     logger.info("Execute code endpoint called")
     req = request.json
-    logger.info(f"Request data: {req}")
+    logger.debug(f"Request data: {req}")
     try:
         code = req.get("code", "")
         language = req.get("language", "python")
@@ -334,7 +332,7 @@ def execute_code():
         # 执行代码
         result = code_component._run({})
         
-        logger.info(f"Code execution result: {result}")
+        logger.debug(f"Code execution result: {result}")
         return get_json_result(data=result)
     except Exception as e:
         traceback_str = traceback.format_exc()

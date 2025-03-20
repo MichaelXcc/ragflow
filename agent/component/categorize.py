@@ -53,7 +53,7 @@ class CategorizeParam(GenerateParam):
                     "--------------------\nCategory: {}\nDescription: {}\n".format(c, desc["description"]))
 
         self.prompt = """
-        You're a text classifier. You need to categorize the user’s questions into {} categories, 
+        You're a text classifier. You need to categorize the user's questions into {} categories, 
         namely: {}
         Here's description of each category:
         {}
@@ -85,10 +85,19 @@ class Categorize(Generate, ABC):
         ans = chat_mdl.chat(self._param.get_prompt(input), [{"role": "user", "content": "\nCategory: "}],
                             self._param.gen_conf())
         logging.debug(f"input: {input}, answer: {str(ans)}")
+        #  TODO: commit
+        # 统计每个类别在回答中出现的次数
+        category_counts = {}
         for c in self._param.category_description.keys():
-            if ans.lower().find(c.lower()) >= 0:
-                return Categorize.be_output(self._param.category_description[c]["to"])
-
+            count = ans.lower().count(c.lower())
+            category_counts[c] = count
+            
+        # 如果有找到类别匹配，返回出现次数最多的类别
+        if any(category_counts.values()):
+            max_category = max(category_counts.items(), key=lambda x: x[1])
+            return Categorize.be_output(self._param.category_description[max_category[0]]["to"])
+        
+        # 如果没有找到任何匹配，返回最后一个类别
         return Categorize.be_output(list(self._param.category_description.items())[-1][1]["to"])
 
     def debug(self, **kwargs):

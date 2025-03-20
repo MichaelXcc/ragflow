@@ -71,6 +71,9 @@ const EditTag = ({ value = [], onChange }: EditTagsProps) => {
   const tagPlusStyle: React.CSSProperties = {
     background: token.colorBgContainer,
     borderStyle: 'dashed',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   };
 
   return (
@@ -105,13 +108,7 @@ const EditTag = ({ value = [], onChange }: EditTagsProps) => {
             />
           ) : (
             <Tag onClick={showInput} style={tagPlusStyle}>
-              <PlusOutlined
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              />
+              <PlusOutlined />
             </Tag>
           )}
         </TweenOneGroup>

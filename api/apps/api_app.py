@@ -50,6 +50,19 @@ from functools import partial
 @manager.route('/new_token', methods=['POST'])  # noqa: F821
 @login_required
 def new_token():
+    """
+    创建新的API令牌
+    
+    此端点用于为当前登录用户创建新的API访问令牌，可用于会话或Canvas的访问
+    
+    请求参数:
+        - dialog_id: 对话ID（普通对话模式）
+        - canvas_id: Canvas ID（Agent模式）
+        
+    返回:
+        成功：包含新创建令牌信息的JSON对象
+        失败：错误信息
+    """
     req = request.json
     try:
         tenants = UserTenantService.query(user_id=current_user.id)
@@ -80,6 +93,19 @@ def new_token():
 @manager.route('/token_list', methods=['GET'])  # noqa: F821
 @login_required
 def token_list():
+    """
+    获取令牌列表
+    
+    获取当前用户特定对话或Canvas的所有API令牌
+    
+    URL参数:
+        - dialog_id: 对话ID
+        - canvas_id: Canvas ID
+        
+    返回:
+        成功：包含令牌列表的JSON对象
+        失败：错误信息
+    """
     try:
         tenants = UserTenantService.query(user_id=current_user.id)
         if not tenants:
@@ -96,6 +122,19 @@ def token_list():
 @validate_request("tokens", "tenant_id")
 @login_required
 def rm():
+    """
+    删除API令牌
+    
+    删除指定的API令牌
+    
+    请求参数:
+        - tokens: 要删除的令牌数组
+        - tenant_id: 租户ID
+        
+    返回:
+        成功：true
+        失败：错误信息
+    """
     req = request.json
     try:
         for token in req["tokens"]:
@@ -109,6 +148,20 @@ def rm():
 @manager.route('/stats', methods=['GET'])  # noqa: F821
 @login_required
 def stats():
+    """
+    获取API使用统计信息
+    
+    获取指定时间范围内的API使用统计数据，包括PV、UV、速度、令牌数量等
+    
+    URL参数:
+        - from_date: 开始日期（默认为7天前）
+        - to_date: 结束日期（默认为当前时间）
+        - canvas_id: Canvas ID（可选，用于区分Agent模式）
+        
+    返回:
+        成功：包含统计数据的JSON对象
+        失败：错误信息
+    """
     try:
         tenants = UserTenantService.query(user_id=current_user.id)
         if not tenants:
@@ -139,6 +192,21 @@ def stats():
 
 @manager.route('/new_conversation', methods=['GET'])  # noqa: F821
 def set_conversation():
+    """
+    创建新的对话
+    
+    基于API令牌创建新的对话，支持普通对话模式和Agent模式
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    URL参数:
+        - user_id: 用户ID（可选）
+        
+    返回:
+        成功：包含新创建对话信息的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -180,18 +248,40 @@ def set_conversation():
 @manager.route('/completion', methods=['POST'])  # noqa: F821
 @validate_request("conversation_id", "messages")
 def completion():
+    """
+    生成回复内容
+    
+    这是系统的核心API端点，处理对话内容生成。支持普通对话模式和Agent模式，以及流式和非流式响应。
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - conversation_id: 对话ID
+        - messages: 对话消息数组，每条消息包含role和content
+        - quote: 是否引用来源（默认为false）
+        - stream: 是否使用流式响应（默认为true）
+        
+    返回:
+        流式模式: 返回SSE格式的流式响应
+        非流式模式: 返回包含回答和引用信息的JSON对象
+    """
+    # 获取并验证API令牌
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
         return get_json_result(
             data=False, message='Authentication error: API key is invalid!"', code=settings.RetCode.AUTHENTICATION_ERROR)
     req = request.json
+    
+    # 获取对话信息
     e, conv = API4ConversationService.get_by_id(req["conversation_id"])
     if not e:
         return get_data_error_result(message="Conversation not found!")
     if "quote" not in req:
         req["quote"] = False
 
+    # 处理消息，排除系统消息和首条助手消息
     msg = []
     for m in req["messages"]:
         if m["role"] == "system":
@@ -199,10 +289,13 @@ def completion():
         if m["role"] == "assistant" and not msg:
             continue
         msg.append(m)
+    
+    # 为消息生成ID
     if not msg[-1].get("id"):
         msg[-1]["id"] = get_uuid()
     message_id = msg[-1]["id"]
 
+    # 填充对话引用和回复的内部函数
     def fillin_conv(ans):
         nonlocal conv, message_id
         if not conv.reference:
@@ -212,6 +305,7 @@ def completion():
         conv.message[-1] = {"role": "assistant", "content": ans["answer"], "id": message_id}
         ans["id"] = message_id
 
+    # 重命名文档字段的内部函数
     def rename_field(ans):
         reference = ans['reference']
         if not isinstance(reference, dict):
@@ -222,18 +316,23 @@ def completion():
                 chunk_i.pop('docnm_kwd')
 
     try:
+        # 处理Agent模式对话
         if conv.source == "agent":
             stream = req.get("stream", True)
             conv.message.append(msg[-1])
+            
+            # 获取Canvas信息
             e, cvs = UserCanvasService.get_by_id(conv.dialog_id)
             if not e:
                 return server_error_response("canvas not found.")
             del req["conversation_id"]
             del req["messages"]
 
+            # 确保DSL格式正确
             if not isinstance(cvs.dsl, str):
                 cvs.dsl = json.dumps(cvs.dsl, ensure_ascii=False)
 
+            # 初始化引用和回复
             if not conv.reference:
                 conv.reference = []
             conv.message.append({"role": "assistant", "content": "", "id": message_id})
@@ -242,18 +341,22 @@ def completion():
             final_ans = {"reference": [], "content": ""}
             canvas = Canvas(cvs.dsl, objs[0].tenant_id)
 
+            # 添加用户输入到Canvas
             canvas.messages.append(msg[-1])
             canvas.add_user_input(msg[-1]["content"])
             answer = canvas.run(stream=stream)
 
+            # 验证回复是否为空
             assert answer is not None, "Nothing. Is it over?"
 
+            # 处理流式响应
             if stream:
                 assert isinstance(answer, partial), "Nothing. Is it over?"
 
                 def sse():
                     nonlocal answer, cvs, conv
                     try:
+                        # 迭代生成回复流
                         for ans in answer():
                             for k in ans.keys():
                                 final_ans[k] = ans[k]
@@ -263,6 +366,7 @@ def completion():
                             yield "data:" + json.dumps({"code": 0, "message": "", "data": ans},
                                                        ensure_ascii=False) + "\n\n"
 
+                        # 更新Canvas和对话历史
                         canvas.messages.append({"role": "assistant", "content": final_ans["content"], "id": message_id})
                         canvas.history.append(("assistant", final_ans["content"]))
                         if final_ans.get("reference"):
@@ -270,11 +374,14 @@ def completion():
                         cvs.dsl = json.loads(str(canvas))
                         API4ConversationService.append_message(conv.id, conv.to_dict())
                     except Exception as e:
+                        # 处理错误情况
                         yield "data:" + json.dumps({"code": 500, "message": str(e),
                                                     "data": {"answer": "**ERROR**: " + str(e), "reference": []}},
                                                    ensure_ascii=False) + "\n\n"
+                    # 结束流响应
                     yield "data:" + json.dumps({"code": 0, "message": "", "data": True}, ensure_ascii=False) + "\n\n"
 
+                # 返回流式响应
                 resp = Response(sse(), mimetype="text/event-stream")
                 resp.headers.add_header("Cache-control", "no-cache")
                 resp.headers.add_header("Connection", "keep-alive")
@@ -282,6 +389,7 @@ def completion():
                 resp.headers.add_header("Content-Type", "text/event-stream; charset=utf-8")
                 return resp
 
+            # 处理非流式响应
             final_ans["content"] = "\n".join(answer["content"]) if "content" in answer else ""
             canvas.messages.append({"role": "assistant", "content": final_ans["content"], "id": message_id})
             if final_ans.get("reference"):
@@ -294,7 +402,7 @@ def completion():
             rename_field(result)
             return get_json_result(data=result)
 
-        # ******************For dialog******************
+        # ******************处理普通对话模式******************
         conv.message.append(msg[-1])
         e, dia = DialogService.get_by_id(conv.dialog_id)
         if not e:
@@ -302,14 +410,17 @@ def completion():
         del req["conversation_id"]
         del req["messages"]
 
+        # 初始化引用和回复
         if not conv.reference:
             conv.reference = []
         conv.message.append({"role": "assistant", "content": "", "id": message_id})
         conv.reference.append({"chunks": [], "doc_aggs": []})
 
+        # 定义流式响应生成器
         def stream():
             nonlocal dia, msg, req, conv
             try:
+                # 迭代生成回复流
                 for ans in chat(dia, msg, True, **req):
                     fillin_conv(ans)
                     rename_field(ans)
@@ -317,11 +428,14 @@ def completion():
                                                ensure_ascii=False) + "\n\n"
                 API4ConversationService.append_message(conv.id, conv.to_dict())
             except Exception as e:
+                # 处理错误情况
                 yield "data:" + json.dumps({"code": 500, "message": str(e),
                                             "data": {"answer": "**ERROR**: " + str(e), "reference": []}},
                                            ensure_ascii=False) + "\n\n"
+            # 结束流响应
             yield "data:" + json.dumps({"code": 0, "message": "", "data": True}, ensure_ascii=False) + "\n\n"
 
+        # 处理流式响应请求
         if req.get("stream", True):
             resp = Response(stream(), mimetype="text/event-stream")
             resp.headers.add_header("Cache-control", "no-cache")
@@ -330,6 +444,7 @@ def completion():
             resp.headers.add_header("Content-Type", "text/event-stream; charset=utf-8")
             return resp
 
+        # 处理非流式响应请求
         answer = None
         for ans in chat(dia, msg, **req):
             answer = ans
@@ -347,6 +462,21 @@ def completion():
 @manager.route('/conversation/<conversation_id>', methods=['GET'])  # noqa: F821
 # @login_required
 def get(conversation_id):
+    """
+    获取对话信息
+    
+    获取指定ID对话的完整信息，包括消息历史和引用
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    URL参数:
+        - conversation_id: 对话ID
+        
+    返回:
+        成功：包含对话完整信息的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -363,6 +493,7 @@ def get(conversation_id):
             return get_json_result(data=False, message='Authentication error: API key is invalid for this conversation_id!"',
                                    code=settings.RetCode.AUTHENTICATION_ERROR)
 
+        # 处理引用中的字段名
         for referenct_i in conv['reference']:
             if referenct_i is None or len(referenct_i) == 0:
                 continue
@@ -378,6 +509,24 @@ def get(conversation_id):
 @manager.route('/document/upload', methods=['POST'])  # noqa: F821
 @validate_request("kb_name")
 def upload():
+    """
+    上传文档
+    
+    上传文档到指定的知识库
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - kb_name: 知识库名称
+        - file: 要上传的文件
+        - parser_id: 解析器ID（可选）
+        - run: 是否立即处理文档（可选，值为1时处理）
+        
+    返回:
+        成功：包含文档信息的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -490,6 +639,22 @@ def upload():
 @manager.route('/document/upload_and_parse', methods=['POST'])  # noqa: F821
 @validate_request("conversation_id")
 def upload_parse():
+    """
+    上传并解析文档
+    
+    上传文档并自动触发解析处理，用于对话中的实时文档处理
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - conversation_id: 对话ID
+        - file: 要上传的文件（可以是多个文件）
+        
+    返回:
+        成功：包含文档ID列表的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -513,6 +678,22 @@ def upload_parse():
 @manager.route('/list_chunks', methods=['POST'])  # noqa: F821
 # @login_required
 def list_chunks():
+    """
+    列出文档块
+    
+    获取指定文档的所有内容块
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - doc_name: 文档名称（与doc_id二选一）
+        - doc_id: 文档ID（与doc_name二选一）
+        
+    返回:
+        成功：包含文档块列表的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -535,6 +716,7 @@ def list_chunks():
             )
         kb_ids = KnowledgebaseService.get_kb_ids(tenant_id)
 
+        # 获取文档块列表
         res = settings.retrievaler.chunk_list(doc_id, tenant_id, kb_ids)
         res = [
             {
@@ -553,6 +735,26 @@ def list_chunks():
 @manager.route('/list_kb_docs', methods=['POST'])  # noqa: F821
 # @login_required
 def list_kb_docs():
+    """
+    列出知识库文档
+    
+    获取指定知识库中的所有文档
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - kb_name: 知识库名称
+        - page: 页码（默认为1）
+        - page_size: 每页数量（默认为15）
+        - orderby: 排序字段（默认为create_time）
+        - desc: 是否降序排序（默认为true）
+        - keywords: 搜索关键词（可选）
+        
+    返回:
+        成功：包含文档列表和总数的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -564,6 +766,7 @@ def list_kb_docs():
     kb_name = req.get("kb_name", "").strip()
 
     try:
+        # 获取知识库信息
         e, kb = KnowledgebaseService.get_by_name(kb_name, tenant_id)
         if not e:
             return get_data_error_result(
@@ -573,6 +776,7 @@ def list_kb_docs():
     except Exception as e:
         return server_error_response(e)
 
+    # 处理分页和排序参数
     page_number = int(req.get("page", 1))
     items_per_page = int(req.get("page_size", 15))
     orderby = req.get("orderby", "create_time")
@@ -580,6 +784,7 @@ def list_kb_docs():
     keywords = req.get("keywords", "")
 
     try:
+        # 查询文档列表
         docs, tol = DocumentService.get_by_kb_id(
             kb_id, page_number, items_per_page, orderby, desc, keywords)
         docs = [{"doc_id": doc['id'], "doc_name": doc['name']} for doc in docs]
@@ -593,6 +798,21 @@ def list_kb_docs():
 @manager.route('/document/infos', methods=['POST'])  # noqa: F821
 @validate_request("doc_ids")
 def docinfos():
+    """
+    获取文档信息
+    
+    获取指定ID列表的文档详细信息
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - doc_ids: 文档ID列表
+        
+    返回:
+        成功：包含文档详细信息的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -607,6 +827,22 @@ def docinfos():
 @manager.route('/document', methods=['DELETE'])  # noqa: F821
 # @login_required
 def document_rm():
+    """
+    删除文档
+    
+    从知识库中删除指定文档
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - doc_names: 文档名称列表（与doc_ids二选一）
+        - doc_ids: 文档ID列表（与doc_names二选一）
+        
+    返回:
+        成功：true
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -616,6 +852,7 @@ def document_rm():
     tenant_id = objs[0].tenant_id
     req = request.json
     try:
+        # 从文档名获取文档ID
         doc_ids = [DocumentService.get_doc_id_by_doc_name(doc_name) for doc_name in req.get("doc_names", [])]
         for doc_id in req.get("doc_ids", []):
             if doc_id not in doc_ids:
@@ -629,6 +866,7 @@ def document_rm():
     except Exception as e:
         return server_error_response(e)
 
+    # 获取根目录
     root_folder = FileService.get_root_folder(tenant_id)
     pf_id = root_folder["id"]
     FileService.init_knowledgebase_docs(pf_id, tenant_id)
@@ -636,6 +874,7 @@ def document_rm():
     errors = ""
     for doc_id in doc_ids:
         try:
+            # 获取文档信息
             e, doc = DocumentService.get_by_id(doc_id)
             if not e:
                 return get_data_error_result(message="Document not found!")
@@ -643,16 +882,20 @@ def document_rm():
             if not tenant_id:
                 return get_data_error_result(message="Tenant not found!")
 
+            # 获取存储地址
             b, n = File2DocumentService.get_storage_address(doc_id=doc_id)
 
+            # 从数据库删除文档
             if not DocumentService.remove_document(doc, tenant_id):
                 return get_data_error_result(
                     message="Database error (Document removal)!")
 
+            # 删除文件和文档关联
             f2d = File2DocumentService.get_by_document_id(doc_id)
             FileService.filter_delete([File.source_type == FileSource.KNOWLEDGEBASE, File.id == f2d[0].file_id])
             File2DocumentService.delete_by_document_id(doc_id)
 
+            # 从存储中删除文件
             STORAGE_IMPL.rm(b, n)
         except Exception as e:
             errors += str(e)
@@ -666,6 +909,21 @@ def document_rm():
 @manager.route('/completion_aibotk', methods=['POST'])  # noqa: F821
 @validate_request("Authorization", "conversation_id", "word")
 def completion_faq():
+    """
+    生成FAQ回复内容
+    
+    特殊格式的对话回复生成，支持图像响应，适用于FAQ场景
+    
+    请求参数:
+        - Authorization: API令牌
+        - conversation_id: 对话ID
+        - word: 用户输入内容
+        - quote: 是否引用来源（默认为true）
+        
+    返回:
+        成功：包含回复内容的JSON对象，支持文本和图像
+        失败：错误信息
+    """
     import base64
     req = request.json
 
@@ -808,6 +1066,30 @@ def completion_faq():
 @manager.route('/retrieval', methods=['POST'])  # noqa: F821
 @validate_request("kb_id", "question")
 def retrieval():
+    """
+    知识库检索
+    
+    在指定知识库中检索与问题相关的内容块
+    
+    请求头:
+        - Authorization: 包含API令牌的Bearer认证头
+        
+    请求参数:
+        - kb_id: 知识库ID列表
+        - question: 检索问题
+        - doc_ids: 文档ID列表（可选，限制检索范围）
+        - page: 页码（默认为1）
+        - size: 每页数量（默认为30）
+        - similarity_threshold: 相似度阈值（默认为0.2）
+        - vector_similarity_weight: 向量相似度权重（默认为0.3）
+        - top_k: 检索最大结果数（默认为1024）
+        - keyword: 是否使用关键词增强（默认为false）
+        - rerank_id: 重排模型ID（可选）
+        
+    返回:
+        成功：包含检索结果的JSON对象
+        失败：错误信息
+    """
     token = request.headers.get('Authorization').split()[1]
     objs = APIToken.query(token=token)
     if not objs:
@@ -825,6 +1107,7 @@ def retrieval():
     top = int(req.get("top_k", 1024))
 
     try:
+        # 获取知识库信息并验证嵌入模型
         kbs = KnowledgebaseService.get_by_ids(kb_ids)
         embd_nms = list(set([kb.embd_id for kb in kbs]))
         if len(embd_nms) != 1:
@@ -832,19 +1115,26 @@ def retrieval():
                 data=False, message='Knowledge bases use different embedding models or does not exist."',
                 code=settings.RetCode.AUTHENTICATION_ERROR)
 
+        # 初始化嵌入模型和重排模型
         embd_mdl = TenantLLMService.model_instance(
             kbs[0].tenant_id, LLMType.EMBEDDING.value, llm_name=kbs[0].embd_id)
         rerank_mdl = None
         if req.get("rerank_id"):
             rerank_mdl = TenantLLMService.model_instance(
                 kbs[0].tenant_id, LLMType.RERANK.value, llm_name=req["rerank_id"])
+        
+        # 如果启用关键词增强，使用LLM生成关键词
         if req.get("keyword", False):
             chat_mdl = TenantLLMService.model_instance(kbs[0].tenant_id, LLMType.CHAT)
             question += keyword_extraction(chat_mdl, question)
+        
+        # 执行检索
         ranks = settings.retrievaler.retrieval(question, embd_mdl, kbs[0].tenant_id, kb_ids, page, size,
                                                similarity_threshold, vector_similarity_weight, top,
                                                doc_ids, rerank_mdl=rerank_mdl,
                                                rank_feature=label_question(question, kbs))
+        
+        # 移除向量数据以减小响应大小
         for c in ranks["chunks"]:
             c.pop("vector", None)
         return get_json_result(data=ranks)

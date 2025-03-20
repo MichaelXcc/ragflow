@@ -19,6 +19,16 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 initialized_root_logger = False
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+def log_code_line_info():
+    import inspect
+    frame = inspect.currentframe().f_back
+    logging.info(f"Executing line {frame.f_lineno} in {frame.f_code.co_filename}")
+
+log_code_line_info()
+
 
 def get_project_base_directory():
     PROJECT_BASE = os.path.abspath(

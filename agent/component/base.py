@@ -31,6 +31,7 @@ _USER_FEEDED_PARAMS = "_user_feeded_params"
 _IS_RAW_CONF = "_is_raw_conf"
 
 
+
 class ComponentParamBase(ABC):
     def __init__(self):
         self.output_var_name = "output"
@@ -545,6 +546,7 @@ class ComponentBase(ABC):
         return df
 
     def get_input_elements(self):
+        logging.info(f"self._param.query: {self._param.query}")
         assert self._param.query, "Please identify input parameters firstly."
         eles = []
         for q in self._param.query:
