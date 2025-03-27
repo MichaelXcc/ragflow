@@ -237,6 +237,7 @@ class LLMBundle:
         self.max_length = model_config.get("max_tokens", 8192)
 
     def encode(self, texts: list):
+        print(f"-----{texts}")
         embeddings, used_tokens = self.mdl.encode(texts)
         if not TenantLLMService.increase_usage(
                 self.tenant_id, self.llm_type, used_tokens):

@@ -4,13 +4,14 @@ import { SharedFrom } from '@/constants/chat';
 import { useTranslate } from '@/hooks/common-hooks';
 import { IModalProps } from '@/interfaces/common';
 import {
-  Button,
   Card,
+  Checkbox,
+  Form,
   Modal,
+  Select,
   Tabs,
   TabsProps,
   Typography,
-  message,
 } from 'antd';
 import { useMemo, useState } from 'react';
 
@@ -31,15 +32,11 @@ const EmbedModal = ({
   form,
   beta = '',
   isAgent,
-  onPublish,
-  dialogName = '',
 }: IModalProps<any> & {
   token: string;
   form: SharedFrom;
   beta: string;
   isAgent: boolean;
-  onPublish?: (iframeSrc: string) => void;
-  dialogName?: string;
 }) => {
   const { t } = useTranslate('chat');
   const isDarkTheme = useIsDarkTheme();
@@ -88,7 +85,7 @@ const EmbedModal = ({
           extra={<CopyToClipboard text={text}></CopyToClipboard>}
           className={styles.codeCard}
         >
-          {/* <div className="p-2">
+          <div className="p-2">
             <h2 className="mb-3">Option:</h2>
 
             <Form.Item
@@ -113,40 +110,25 @@ const EmbedModal = ({
                 style={{ width: '100%' }}
               />
             </Form.Item>
-          </div> */}
+          </div>
           <HightLightMarkdown>{text}</HightLightMarkdown>
         </Card>
       ),
     },
-    // {
-    //   key: '2',
-    //   label: t('partialTitle'),
-    //   children: t('comingSoon'),
-    // },
-    // {
-    //   key: '3',
-    //   label: t('extensionTitle'),
-    //   children: t('comingSoon'),
-    // },
+    {
+      key: '2',
+      label: t('partialTitle'),
+      children: t('comingSoon'),
+    },
+    {
+      key: '3',
+      label: t('extensionTitle'),
+      children: t('comingSoon'),
+    },
   ];
 
   const onChange = (key: string) => {
     console.log(key);
-  };
-
-  const handlePublish = async () => {
-    try {
-      message.success('发布成功！');
-      // 在新窗口中打开 iframe
-      window.open(iframeSrc, '_blank', 'width=800,height=600');
-      if (onPublish) {
-        onPublish(iframeSrc);
-      }
-      hideModal?.();
-    } catch (error) {
-      message.error('发布失败，请重试');
-      console.error('发布失败:', error);
-    }
   };
 
   return (
@@ -157,14 +139,6 @@ const EmbedModal = ({
       width={'50vw'}
       onOk={hideModal}
       onCancel={hideModal}
-      footer={[
-        <Button key="publish" type="primary" onClick={handlePublish}>
-          发布
-        </Button>,
-        <Button key="cancel" onClick={hideModal}>
-          取消
-        </Button>,
-      ]}
     >
       <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
       <div className="text-base font-medium mt-4 mb-1">
@@ -179,8 +153,7 @@ const EmbedModal = ({
       >
         {token}
       </Paragraph>
-      {/* TODO: 如何使用智能体ID文档链接 */}
-      {/* <Link
+      <Link
         href={
           isAgent
             ? 'https://ragflow.io/docs/dev/http_api_reference#create-session-with-agent'
@@ -189,7 +162,7 @@ const EmbedModal = ({
         target="_blank"
       >
         {t('howUseId', { keyPrefix: isAgent ? 'flow' : 'chat' })}
-      </Link> */}
+      </Link>
     </Modal>
   );
 };
