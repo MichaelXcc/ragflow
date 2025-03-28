@@ -6,6 +6,7 @@ import {
   EditOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  PlayCircleOutlined,
   PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
@@ -18,6 +19,8 @@ import {
   Dropdown,
   Empty,
   Flex,
+  Form,
+  Input,
   List,
   MenuProps,
   Row,
@@ -109,6 +112,11 @@ const Chat = () => {
   >([]);
   const { removeDialog } = useRemoveNextDialog();
   const showDeleteConfirm = useShowDeleteConfirm();
+  const [showRenderPage, setShowRenderPage] = useState(false);
+  const [appListModalVisible, setAppListModalVisible] = useState(false);
+  const [iframeCode, setIframeCode] = useState('');
+  const [showIframe, setShowIframe] = useState(false);
+  const [form] = Form.useForm();
 
   const handleAppCardEnter = (id: string) => () => {
     handleItemEnter(id);
@@ -359,9 +367,20 @@ const Chat = () => {
     return '';
   };
 
+  const handleIframeSubmit = (values: { iframeCode: string }) => {
+    setIframeCode(values.iframeCode);
+    setShowIframe(true);
+  };
+
+  const handleResetIframe = () => {
+    setIframeCode('');
+    setShowIframe(false);
+    form.resetFields();
+  };
+
   return (
     <Flex className={styles.chatWrapper}>
-      {!showConversations ? (
+      {!showConversations && !showRenderPage ? (
         // 应用列表视图
         <Flex className={styles.mainLayout}>
           {/* 左侧工作区列表 */}
@@ -414,13 +433,22 @@ const Chat = () => {
               align="center"
             >
               <Title level={4}>{t('applicationList')}</Title>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleShowChatConfigurationModal()}
-              >
-                {t('createAssistant')}
-              </Button>
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<PlayCircleOutlined />}
+                  onClick={() => setShowRenderPage(true)}
+                >
+                  {t('render') || '渲染'}
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleShowChatConfigurationModal()}
+                >
+                  {t('createAssistant')}
+                </Button>
+              </Space>
             </Flex>
             <Divider />
             <Spin spinning={dialogLoading}>
@@ -490,6 +518,96 @@ const Chat = () => {
                 </Empty>
               )}
             </Spin>
+          </Flex>
+        </Flex>
+      ) : showRenderPage ? (
+        // 渲染页面
+        <Flex className={styles.renderPageContainer} vertical>
+          <Flex className={styles.renderPageHeader} align="center">
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              onClick={() => setShowRenderPage(false)}
+            >
+              {t('backToHome') || '返回主页'}
+            </Button>
+            <Title level={4} style={{ margin: '0 auto' }}>
+              {t('renderPage') || '渲染页面'}
+            </Title>
+          </Flex>
+          <Divider />
+          <Flex className={styles.renderPageContent} vertical>
+            {!showIframe ? (
+              <Form
+                form={form}
+                onFinish={handleIframeSubmit}
+                layout="vertical"
+                className={styles.iframeForm}
+              >
+                <Form.Item
+                  label={t('pasteIframeCode') || '粘贴iframe代码'}
+                  name="iframeCode"
+                  rules={[
+                    {
+                      required: true,
+                      message: t('pleasePasteIframeCode') || '请粘贴iframe代码',
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    rows={12}
+                    placeholder={
+                      t('pasteIframeCodePlaceholder') ||
+                      '请将iframe代码粘贴到这里...'
+                    }
+                    style={{ fontFamily: 'monospace' }}
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <Space size="large">
+                    <Button type="primary" htmlType="submit" size="large">
+                      {t('render') || '渲染'}
+                    </Button>
+                    <Button onClick={handleResetIframe} size="large">
+                      {t('reset') || '重置'}
+                    </Button>
+                  </Space>
+                </Form.Item>
+              </Form>
+            ) : (
+              <Flex vertical className={styles.iframeContainer}>
+                <Flex
+                  justify="space-between"
+                  align="center"
+                  className={styles.iframeHeader}
+                >
+                  <Button
+                    type="primary"
+                    onClick={handleResetIframe}
+                    size="large"
+                    style={{ backgroundColor: '#1677ff' }}
+                  >
+                    {t('backToEdit') || '返回编辑'}
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() =>
+                      window.open(
+                        iframeCode.match(/src="([^"]+)"/)?.[1] || '',
+                        '_blank',
+                      )
+                    }
+                    size="large"
+                  >
+                    {t('openInNewTab') || '在新标签页打开'}
+                  </Button>
+                </Flex>
+                <div
+                  className={styles.iframeWrapper}
+                  dangerouslySetInnerHTML={{ __html: iframeCode }}
+                />
+              </Flex>
+            )}
           </Flex>
         </Flex>
       ) : (
