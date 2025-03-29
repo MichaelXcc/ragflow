@@ -555,7 +555,7 @@ const Chat = () => {
                   ]}
                 >
                   <Input.TextArea
-                    rows={12}
+                    rows={11}
                     placeholder={
                       t('pasteIframeCodePlaceholder') ||
                       '请将iframe代码粘贴到这里...'
